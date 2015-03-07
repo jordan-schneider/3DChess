@@ -12,7 +12,7 @@ public class King extends Piece {
 	@Override
 	public void move(int[] to) {
 		super.move(to);
-		hasMoved = false;
+		hasMoved = true;
 	}
 
 	@Override
@@ -30,8 +30,6 @@ public class King extends Piece {
 		if(board.isValidMove(this,xPlusOne)) moves.add(xPlusOne);
 		int[] xMinusOne = {location[0]-1,location[1],location[2]};
 		if(board.isValidMove(this,xMinusOne)) moves.add(xMinusOne);
-		if(!hasMoved && isLeftClear()); //TODO handle castling, write isLeft/RightClear() methods
-		if(!hasMoved && isRightClear());
 		return moves;
 	}
 }

@@ -11,7 +11,7 @@ public class RaumschachBoard implements Board {
 
 		//Handling black's pieces
 		//Using layout defined by http://www.chessvariants.org/3d.dir/3d5.html
-		King king = new King(2,4,4,BLACK,this);
+		King king = new Raum_King(2,4,4,BLACK,this);
 		black.add(king);
 		add(king);
 
@@ -87,6 +87,16 @@ public class RaumschachBoard implements Board {
 			}
 		}
 		return pieces;
+	}
+
+	@Override
+	public int[] getSize() {
+		return new int[]{board[0][0].length,board[0].length,board.length};
+	}
+
+	@Override
+	public Piece getAt(int[] loc) {
+		return this.board[loc[0]][loc[1]][loc[2]];
 	}
 
 }

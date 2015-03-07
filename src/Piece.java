@@ -18,7 +18,5 @@ public abstract class Piece {
 	public void move(int[] to){
 		location = to;
 	}
-	public ArrayList<int[]> getMoves(){
-		return null;
-	}
+	abstract ArrayList<int[]> getMoves();
 }
