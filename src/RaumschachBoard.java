@@ -15,7 +15,6 @@ public class RaumschachBoard implements Board {
 		black.add(king);
 		add(king);
 
-		//TODO finish other piece classes
 		Rook rook = new Rook(0,4,4,BLACK,this);
 		black.add(rook);
 		add(rook);
@@ -34,7 +33,7 @@ public class RaumschachBoard implements Board {
 
 		Pawn pawn;
 		for(int z=3;z<5;z++){
-			for(int x=0;i<5;i++){
+			for(int x=0;x<5;x++){
 				pawn = new Pawn(x,3,z,BLACK,this);
 				black.add(pawn);
 				add(pawn);
@@ -62,6 +61,53 @@ public class RaumschachBoard implements Board {
 		add(unicorn);
 		
 		//TODO finish white later
+		king = new Raum_King(2,0,0,WHITE,this);
+		white.add(king);
+		add(king);
+
+		rook = new Rook(0,0,0,WHITE,this);
+		white.add(rook);
+		add(rook);
+
+		rook = new Rook(4,0,0,WHITE,this);
+		white.add(rook);
+		add(rook);
+
+		knight = new Knight(1,0,0,WHITE,this);
+		white.add(knight);
+		add(knight);
+
+		knight = new Knight(3,0,0,WHITE,this);
+		white.add(knight);
+		add(knight);
+
+		for(int z=0;z<2;z++){
+			for(int x=0;x<5;x++){
+				pawn = new Pawn(x,1,z,WHITE,this);
+				white.add(pawn);
+				add(pawn);
+			}
+		}
+		
+		queen = new Queen(2,0,1,WHITE,this);
+		white.add(queen);
+		add(queen);
+		
+		bishop = new Bishop(0,0,1,WHITE,this);
+		white.add(bishop);
+		add(bishop);
+		
+		bishop = new Bishop(3,0,1,WHITE,this);
+		white.add(bishop);
+		add(bishop);
+		
+		unicorn = new Unicorn(1,0,1,WHITE,this);
+		white.add(unicorn);
+		add(unicorn);
+		
+		unicorn = new Unicorn(3,0,1,WHITE,this);
+		white.add(unicorn);
+		add(unicorn);
 	}
 
 	private void add(Piece piece) {
