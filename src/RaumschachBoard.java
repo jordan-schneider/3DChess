@@ -5,8 +5,7 @@ import java.util.List;
 
 public class RaumschachBoard extends Board {
 	Piece[][][] board;
-	private List<Piece> whitepiece=new ArrayList<Piece>();
-	private List<Piece> blackpiece=new ArrayList<Piece>();
+
 
 	public RaumschachBoard(Opponent white, Opponent black) {
 		board = new Piece[5][5][5];
@@ -147,17 +146,9 @@ public class RaumschachBoard extends Board {
 
 	@Override
 	public ArrayList<Piece> getPieces() {
-		ArrayList<Piece> pieces = new ArrayList<Piece>();
-		for(Piece[][] plane:board){
-			for(Piece[] row:plane){
-				for(Piece p: row){
-					if(p!=null){
-						pieces.add(p);
-					}
-				}
-			}
-		}
-		return pieces;
+		ArrayList<Piece> r=new ArrayList<Piece>(whitepiece);
+		r.addAll(blackpiece);
+		return r;
 	}
 
 	@Override
@@ -182,7 +173,7 @@ public class RaumschachBoard extends Board {
 					if(this.getAt(new int[]{x,y,z})==null)
 						str.append(".");
 					else
-						str.append(this.getAt(new int[]{x,y,z}).owner==BLACK?Character.toLowerCase(this.getAt(new int[]{x,y,z}).cCode):this.getAt(new int[]{x,y,z}).cCode);
+						str.append(this.getAt(new int[]{x,y,z}).getSymbol());
 					str.append(" ");
 			}
 			str.append('\n');

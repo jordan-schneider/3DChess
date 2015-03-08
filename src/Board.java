@@ -1,8 +1,11 @@
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Board {
 	public static final int WHITE = 0;
 	public static final int BLACK = 1;
+	protected List<Piece> whitepiece=new ArrayList<Piece>();
+	protected List<Piece> blackpiece=new ArrayList<Piece>();
 	public abstract ArrayList<Piece> getPieces();
 	public abstract int[] getSize();
 	public abstract Piece getAt(int[] loc);
