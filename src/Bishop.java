@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Bishop extends Piece {
 
 	public Bishop(int x, int y, int z, int owner, Board board) {
-		super(x, y, z, owner, board);
+		super(x, y, z, owner, board,'B');
 	}
 
 	@Override

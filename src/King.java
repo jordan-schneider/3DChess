@@ -5,7 +5,7 @@ public class King extends Piece {
 	boolean hasMoved;
 
 	public King(int x, int y, int z, int owner, Board board){
-		super(x,y,z,owner,board);
+		super(x,y,z,owner,board,'K');
 		hasMoved = false;
 	}
 

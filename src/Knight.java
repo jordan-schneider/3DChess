@@ -9,7 +9,7 @@ public class Knight extends Piece {
 		{0,-1,-2},{0,-2,-1},{-1,0,-2},{-1,-2,0},{-2,0,-1},{-2,-1,0}
 	};
 	public Knight(int x, int y, int z, int owner, Board board) {
-		super(x, y, z, owner, board);
+		super(x, y, z, owner, board,'N');
 	}
 
 	@Override

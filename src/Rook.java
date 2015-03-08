@@ -4,7 +4,7 @@ import java.util.ArrayList;
 public class Rook extends Piece {
 
 	public Rook(int x, int y, int z, int owner, Board board) {
-		super(x, y, z, owner, board);
+		super(x, y, z, owner, board,'R');
 	}
 
 	@Override

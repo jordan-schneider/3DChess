@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Queen extends Piece {
 
 	public Queen(int x, int y, int z, int owner, Board board) {
-		super(x, y, z, owner, board);
+		super(x, y, z, owner, board,'Q');
 	}
 
 	@Override
