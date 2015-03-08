@@ -27,7 +27,7 @@ public class Game extends Thread{
 		super.start();
 	}
 	public void run(){
-		while(true){
+		while(!board.isStalemate(cPlayer)){
 			int ctemp=cPlayer;
 			System.out.println(players[0]);
 			players[cPlayer].requestMove();
