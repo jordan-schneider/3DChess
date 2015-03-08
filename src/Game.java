@@ -20,14 +20,14 @@ public class Game extends Thread{
 		p2.init(this, p2id);
 		ids=new long[]{p1id,p2id};
 		this.ui=ui;
-		ui.init(players,this);
+		ui.init(players,ids,this);
 	}
 	public void start(){
 		this.started=true;
 		super.start();
 	}
 	public void run(){
-		while(true){
+		while(!board.isStalemate(cPlayer)){
 			int ctemp=cPlayer;
 			System.out.println(players[0]);
 			players[cPlayer].requestMove();

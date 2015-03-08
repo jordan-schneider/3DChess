@@ -1,11 +1,12 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
-public class RaumschachBoard implements Board {
-	public static final int WHITE = 0;
-	public static final int BLACK = 1;
+public class RaumschachBoard extends Board {
 	Piece[][][] board;
+	private List<Piece> whitepiece=new ArrayList<Piece>();
+	private List<Piece> blackpiece=new ArrayList<Piece>();
 
 	public RaumschachBoard(Opponent white, Opponent black) {
 		board = new Piece[5][5][5];
@@ -109,6 +110,13 @@ public class RaumschachBoard implements Board {
 		unicorn = new Unicorn(3,0,1,WHITE,this);
 		white.add(unicorn);
 		add(unicorn);
+		for(int i=0;i<5;i++)
+			for(int j=0;j<5;j++)
+				for(int k=0;k<5;k++)
+					if(board[i][j][k]!=null&&board[i][j][k].owner==RaumschachBoard.WHITE)
+						whitepiece.add(board[i][j][k]);
+					else if(board[i][j][k]!=null)
+						blackpiece.add(board[i][j][k]);
 	}
 
 	private void add(Piece piece) {
@@ -117,9 +125,22 @@ public class RaumschachBoard implements Board {
 
 	@Override
 	public boolean isValidMove(Piece piece, int[] move) {
+		if(move[0]<0||move[1]<0||move[2]<0||move[0]>4||move[1]>4||move[2]>4)
+			return false;
 		for(int[] a:piece.getMoves()){
-			if(Arrays.equals(move, a))
-				return true;
+			if(Arrays.equals(move, a)){
+				int[] t=piece.location;
+				Piece at=board[move[0]][move[1]][move[2]];
+				//make move
+				piece.move(move);
+				board[move[0]][move[1]][move[2]]=piece;
+				boolean g=isCheck(piece.owner);	//check if the move reveals a pin.
+				piece.move(t);	//undo move
+				board[t[0]][t[1]][t[2]]=piece;
+				board[move[0]][move[1]][move[2]]=at;
+				if(!g)
+					return true;
+			}
 		}
 		return false;
 	}
@@ -146,28 +167,47 @@ public class RaumschachBoard implements Board {
 
 	@Override
 	public Piece getAt(int[] loc) {
+		if(loc[0]<0||loc[1]<0||loc[2]<0||loc[0]>4||loc[1]>4||loc[2]>4)
+			return null;
 		return this.board[loc[0]][loc[1]][loc[2]];
 	}
 
 	public String toString(){
-		String str="";
-		str+="A:abcde B:abcde C:abcde D:abcde E:abcde\n";
+		StringBuilder str=new StringBuilder();
+		str.append("A:abcde B:abcde C:abcde D:abcde E:abcde\n");
 		for(int y=4;y>=0;y--){
 			for(int z=0;z<5;z++){
-				str+=(y+1)+" ";
+				str.append((y+1)+" ");
 				for(int x=0;x<5;x++)
 					if(this.getAt(new int[]{x,y,z})==null)
-						str+=".";
+						str.append(".");
 					else
-						str+=this.getAt(new int[]{x,y,z}).owner==RaumschachBoard.BLACK?Character.toLowerCase(this.getAt(new int[]{x,y,z}).cCode):this.getAt(new int[]{x,y,z}).cCode;
-					str+=" ";
+						str.append(this.getAt(new int[]{x,y,z}).owner==BLACK?Character.toLowerCase(this.getAt(new int[]{x,y,z}).cCode):this.getAt(new int[]{x,y,z}).cCode);
+					str.append(" ");
 			}
-			str+='\n';
+			str.append('\n');
 		}
 
 
-		return str;
+		return str.toString();
 
+	}
+	public boolean isCheck(int player){
+		int[] k=null;
+		for(Piece p:(player==WHITE)?whitepiece:blackpiece)
+			if(p instanceof Raum_King)
+				k=p.location;
+		for(Piece p:(player==WHITE)?blackpiece:whitepiece){
+			for(int[] m:p.getMoves())
+				if(Arrays.equals(m, k))
+					return true;
+		}
+		return false;
+	}
+	public boolean isCheckmate(int player){
+		if(!isStalemate(player))
+			return false;
+		return isCheck(player);
 	}
 
 	@Override
@@ -175,4 +215,34 @@ public class RaumschachBoard implements Board {
 		board[to[0]][to[1]][to[2]]=piece;
 	}
 
+	@Override
+	public boolean isStalemate(int player) {
+		for(Piece p:(player==WHITE?whitepiece:blackpiece)){
+			for(int[] m:p.getMoves()){
+				//for reversal
+				int[] t=p.location;
+				Piece at=board[m[0]][m[1]][m[2]];
+				//make move
+				p.move(m);
+				board[m[0]][m[1]][m[2]]=p;
+				//test if legal
+				if(!isCheck((player+1)%2)){
+					//undo move
+					p.move(t);
+					board[t[0]][t[1]][t[2]]=p;
+					board[m[0]][m[1]][m[2]]=at;
+					return false;	//legal move
+				}
+				//undo move
+				p.move(t);
+				board[t[0]][t[1]][t[2]]=p;
+				board[m[0]][m[1]][m[2]]=at;
+			}
+		}
+		return true;
+	}
+	public static String moveToString(int[] t){
+		byte[] b=new byte[]{(byte)(t[2]+'A'),(byte)(t[0]+'a'),(byte)(t[1]+'1')};
+		return new String(b);
+	}
 }

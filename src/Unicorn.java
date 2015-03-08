@@ -14,7 +14,8 @@ public class Unicorn extends Piece {
 			for(int j=-1;j<2;j+=2)
 				for(int k=-1;k<2;k+=2){
 					int[] loc=this.location.clone();
-					for(;loc[0]<board.getSize()[0]&&loc[1]<board.getSize()[1]&&loc[2]<board.getSize()[2];loc[0]+=i,loc[1]+=j,loc[2]+=k){
+					loc[0]+=i;loc[1]+=j;loc[2]+=k;
+					for(;loc[0]>=0&&loc[1]>=0&&loc[2]>=0&&loc[0]<board.getSize()[0]&&loc[1]<board.getSize()[1]&&loc[2]<board.getSize()[2];loc[0]+=i,loc[1]+=j,loc[2]+=k){
 						final Piece p=board.getAt(loc);
 						if(p==null)
 							valid.add(loc.clone());

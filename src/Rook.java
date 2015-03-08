@@ -12,7 +12,9 @@ public class Rook extends Piece {
 		ArrayList<int[]> valid=new ArrayList<int[]>();
 		for(int i=0;i<3;i++){
 			int[] loc=this.location.clone();
+			loc[i]++;
 			for(;loc[i]<board.getSize()[i];loc[i]++){
+
 				final Piece p=board.getAt(loc);
 				if(p==null)
 					valid.add(loc.clone());
@@ -24,6 +26,7 @@ public class Rook extends Piece {
 				}
 			}
 			loc=this.location.clone();
+			loc[i]--;
 			for(;loc[i]>=0;loc[i]--){
 				final Piece p=board.getAt(loc);
 				if(p==null)
