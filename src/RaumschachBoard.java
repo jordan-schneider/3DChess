@@ -125,9 +125,22 @@ public class RaumschachBoard extends Board {
 
 	@Override
 	public boolean isValidMove(Piece piece, int[] move) {
+		if(move[0]<0||move[1]<0||move[2]<0||move[0]>4||move[1]>4||move[2]>4)
+			return false;
 		for(int[] a:piece.getMoves()){
-			if(Arrays.equals(move, a))
-				return true;
+			if(Arrays.equals(move, a)){
+				int[] t=piece.location;
+				Piece at=board[move[0]][move[1]][move[2]];
+				//make move
+				piece.move(move);
+				board[move[0]][move[1]][move[2]]=piece;
+				boolean g=isCheck(piece.owner);	//check if the move reveals a pin.
+				piece.move(t);	//undo move
+				board[t[0]][t[1]][t[2]]=piece;
+				board[move[0]][move[1]][move[2]]=at;
+				if(!g)
+					return true;
+			}
 		}
 		return false;
 	}
@@ -154,6 +167,8 @@ public class RaumschachBoard extends Board {
 
 	@Override
 	public Piece getAt(int[] loc) {
+		if(loc[0]<0||loc[1]<0||loc[2]<0||loc[0]>4||loc[1]>4||loc[2]>4)
+			return null;
 		return this.board[loc[0]][loc[1]][loc[2]];
 	}
 
@@ -226,5 +241,8 @@ public class RaumschachBoard extends Board {
 		}
 		return true;
 	}
-
+	public static String moveToString(int[] t){
+		byte[] b=new byte[]{(byte)(t[2]+'A'),(byte)(t[0]+'a'),(byte)(t[1]+'1')};
+		return new String(b);
+	}
 }

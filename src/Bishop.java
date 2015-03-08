@@ -17,6 +17,7 @@ public class Bishop extends Piece {
 		for(int i=0;i<3;i++){
 			for(int j=i+1;j<3;j++){
 				int[] loc=this.location.clone();
+				loc[i]++;loc[j]++;
 				for(;loc[i]<board.getSize()[i]&&loc[j]<board.getSize()[j];loc[i]++,loc[j]++){
 					final Piece p=board.getAt(loc);
 					if(p==null)
@@ -30,6 +31,7 @@ public class Bishop extends Piece {
 				}
 				
 				loc=this.location.clone();
+				loc[i]--;loc[j]--;
 				for(;loc[i]>=0&&loc[j]>=0;loc[i]--,loc[j]--){
 					final Piece p=board.getAt(loc);
 					if(p==null)
@@ -43,6 +45,7 @@ public class Bishop extends Piece {
 				}
 				
 				loc=this.location.clone();
+				loc[i]++;loc[j]--;
 				for(;loc[i]<board.getSize()[i]&&loc[j]>=0;loc[i]++,loc[j]--){
 					final Piece p=board.getAt(loc);
 					if(p==null)
@@ -56,6 +59,7 @@ public class Bishop extends Piece {
 				}
 				
 				loc=this.location.clone();
+				loc[i]--;loc[j]++;
 				for(;loc[i]>=0&&loc[j]<board.getSize()[j];loc[i]--,loc[j]++){
 					final Piece p=board.getAt(loc);
 					if(p==null)

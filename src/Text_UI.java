@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -26,10 +27,16 @@ public class Text_UI implements UI{
 				System.out.println(g.board.toString());
 				System.out.print("Where do you want to move from? (e.g. Dc4) ");
 				String from=s.nextLine();
-				System.out.print("Where do you want to move to? ");
+				f=new int[]{from.charAt(1)-'a',from.charAt(2)-'1',from.charAt(0)-'A'};
+				List<int[]> valid=g.board.getAt(f).getMoves();
+				System.out.print("These are valid moves: ");
+				for(int[] i:valid)
+					if(g.board.isValidMove(g.board.getAt(f), i))
+						System.out.print(RaumschachBoard.moveToString(i)+" ");
+				System.out.print("\nWhere do you want to move to? ");
 				String to=s.nextLine();
 				System.out.println();
-				f=new int[]{from.charAt(1)-'a',from.charAt(2)-'1',from.charAt(0)-'A'};
+				
 				t=new int[]{to.charAt(1)-'a',to.charAt(2)-'1',to.charAt(0)-'A'};
 			}while(!opps[g.cPlayer].makeMove(f, t));
 		}else
@@ -37,3 +44,4 @@ public class Text_UI implements UI{
 	}
 
 }
+
