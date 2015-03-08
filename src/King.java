@@ -5,14 +5,14 @@ public class King extends Piece {
 	boolean hasMoved;
 
 	public King(int x, int y, int z, int owner, Board board){
-		super(x,y,z,owner,board);
+		super(x,y,z,owner,board,'K');
 		hasMoved = false;
 	}
 
 	@Override
 	public void move(int[] to) {
 		super.move(to);
-		hasMoved = false;
+		hasMoved = true;
 	}
 
 	@Override
@@ -30,8 +30,6 @@ public class King extends Piece {
 		if(board.isValidMove(this,xPlusOne)) moves.add(xPlusOne);
 		int[] xMinusOne = {location[0]-1,location[1],location[2]};
 		if(board.isValidMove(this,xMinusOne)) moves.add(xMinusOne);
-		if(!hasMoved && isLeftClear()); //TODO handle castling, write isLeft/RightClear() methods
-		if(!hasMoved && isRightClear());
 		return moves;
 	}
 }
