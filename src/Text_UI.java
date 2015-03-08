@@ -3,14 +3,18 @@ import java.util.Scanner;
 
 public class Text_UI implements UI{
 	private Opponent[] opps;
+	private long[] ids;
 	private Game g;
 	private Scanner s=new Scanner(System.in);
 	@Override
-	public void init(Opponent[] opps,Game g) {
+	public void init(Opponent[] opps,long[] ids,Game g) {
 		this.opps=opps;
 		this.g=g;
+		this.ids=ids;
 	}
-	public void getMove(){
+	public void getMove(long id){
+		if(id!=ids[g.cPlayer])
+			return;
 		if(opps[g.cPlayer].isHuman()){
 			boolean first=true;
 			int[] f,t;
