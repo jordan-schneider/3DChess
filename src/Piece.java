@@ -16,7 +16,9 @@ public abstract class Piece {
 		this.cCode=cCode;
 		this.board=board;
 	}
-	
+	public char getSymbol(){
+		return owner==Board.BLACK?Character.toLowerCase(cCode):cCode;
+	}
 	public void move(int[] to){
 		location = to;
 	}
