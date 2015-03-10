@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
 import javax.swing.JPanel;
@@ -17,7 +18,9 @@ public class TwoDPanel extends JPanel {
 	int pX, pY;
 	int[] from;
 	int[] fromcoord;
+	int[] atCheckSquare=null;
 	TwoDPiece whichPiece=null;
+	List<int[]> highlight=new LinkedList<int[]>();
 	boolean isFirstTime = true;
 	Rectangle area;
 	boolean pressz = false;
@@ -55,9 +58,9 @@ public class TwoDPanel extends JPanel {
 					g2d.fillRect(20*(z+1)+40*(5*z+x), 40*(4-y)+40, 40, 40);
 				}
 		//(1080)+20 , 240
-			
-		
-		
+
+
+
 		if (isFirstTime) {
 			area = new Rectangle(getPreferredSize());
 			isFirstTime = false;
@@ -67,6 +70,12 @@ public class TwoDPanel extends JPanel {
 			TwoDPiece rect=li.previous();
 			g2d.drawImage(rect.img, rect.x, rect.y, null);
 		}
+		g.setColor(Color.RED);
+		if(atCheckSquare!=null)
+			g2d.drawRect(getLocationCorner(atCheckSquare)[0], getLocationCorner(atCheckSquare)[1], 40,40);
+		g.setColor(Color.YELLOW);
+		for(int[] i:highlight)
+			g2d.drawRect(getLocationCorner(i)[0], getLocationCorner(i)[1], 40, 40);
 	}
 	boolean checkRect() {
 		if (area==null||area.contains(whichPiece.x, whichPiece.y, whichPiece.getWidth(), whichPiece.getHeight()))
@@ -98,6 +107,10 @@ public class TwoDPanel extends JPanel {
 					from=rect.p.location;
 					fromcoord=new int[]{rect.x,rect.y};
 					whichPiece=rect;
+					highlight.clear();
+					for(int[] i:rect.p.getMoves())
+						if(gui.g.board.isValidMove(rect.p, i))
+							highlight.add(i);
 					li.remove();
 					TwoDPanel.this.gpieces.addFirst(rect);
 					updateLocation(e);
@@ -123,17 +136,34 @@ public class TwoDPanel extends JPanel {
 				updateLocation(e);
 				//fit to square closest to cursor
 				int[] to=pointToLocation(e.getX(),e.getY());
-				
+				Piece tempp = gui.g.board.getAt(to);
 				if(whichPiece.p.owner==gui.g.cPlayer&&gui.opps[gui.g.cPlayer].isHuman()){
-					if(gui.opps[gui.g.cPlayer].makeMove(from, to))
+					if(gui.opps[gui.g.cPlayer].makeMove(from, to)){
 						whichPiece.setLocation(getLocationCorner(to)[0], getLocationCorner(to)[1]);
-					else
+						if(tempp!=null){
+							ListIterator<TwoDPiece> li=gpieces.listIterator();
+							while(li.hasNext())
+								if(li.next().p==tempp){
+									li.remove();
+									repaint();
+									break;
+								}
+						}
+						if(gui.g.board.isCheck(gui.g.cPlayer)){
+							System.out.println("!"+gui.g.board.isStalemate(gui.g.cPlayer,true));
+							for(Piece p:Board.BLACK==gui.g.cPlayer?gui.g.board.blackpiece:gui.g.board.whitepiece)
+								if(p instanceof King)
+									atCheckSquare=p.location;
+						}else
+							atCheckSquare=null;
+					}else
 						whichPiece.setLocation(fromcoord[0], fromcoord[1]);
 				}else
 					whichPiece.setLocation(fromcoord[0], fromcoord[1]);
 			} else 
 				pressz = false;
 			whichPiece=null;
+			highlight.clear();
 		}
 
 		public void updateLocation(MouseEvent e) {
