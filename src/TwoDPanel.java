@@ -5,17 +5,23 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 
 public class TwoDPanel extends JPanel {
 	LinkedList<TwoDPiece> gpieces=new LinkedList<TwoDPiece>();
 	int pX, pY;
+	BufferedImage black = null;
+	BufferedImage white = null;
 	int[] from;
 	int[] fromcoord;
 	int[] atCheckSquare=null;
@@ -27,6 +33,14 @@ public class TwoDPanel extends JPanel {
 	Local_GUI gui;
 	public TwoDPanel(Local_GUI gui){
 		this.gui=gui;
+		try {
+			black = ImageIO.read(new File("Blackboard.gif"));
+		} catch (IOException e) {
+		}
+		try {
+			white = ImageIO.read(new File("WhiteBoard.gif"));
+		} catch (IOException e) {
+		}
 		setBackground(Color.LIGHT_GRAY);
 		addMouseMotionListener(new DragAdapter());
 		addMouseListener(new DragAdapter());
@@ -52,10 +66,9 @@ public class TwoDPanel extends JPanel {
 			for(int x=0;x<5;x++)
 				for(int y=0;y<5;y++){
 					if((x+y+z)%2==0)
-						g2d.setColor(Color.BLUE);
+						g2d.drawImage(black,20*(z+1)+40*(5*z+x), 40*(4-y)+40,40,40,null);
 					else
-						g2d.setColor(Color.GREEN);
-					g2d.fillRect(20*(z+1)+40*(5*z+x), 40*(4-y)+40, 40, 40);
+						g2d.drawImage(white,20*(z+1)+40*(5*z+x), 40*(4-y)+40,40,40,null);
 				}
 		//(1080)+20 , 240
 
