@@ -1,12 +1,19 @@
 import java.util.ArrayList;
 
 /**
- * Raumschach Bishops move like bishops in 3 planes.
+ * Raumschach Bishops move like normal chess bishops in 3 any of the facially aligned planes.
  * @author Matthew
  *
  */
 public class Bishop extends Piece {
-
+	/**
+	 * Standard Piece/Bishop constructor.
+	 * @param x - initial x-coordinate
+	 * @param y - initial y-coordinate
+	 * @param z - initial z-coordinate
+	 * @param owner - black or white
+	 * @param board - associated board
+	 */
 	public Bishop(int x, int y, int z, int owner, Board board) {
 		super(x, y, z, owner, board,'B');
 	}

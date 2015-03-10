@@ -1,7 +1,5 @@
 
 public class LocalOpponent extends Opponent {
-	private static final int WHITE = 0;
-	private static final int BLACK = 1;
 	public LocalOpponent(long id) {
 		super(id);
 	}
