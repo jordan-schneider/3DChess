@@ -23,7 +23,7 @@ public class King extends Piece {
 		for(int[] m:moves){
 			int[] loc={m[0]+location[0],m[1]+location[1],m[2]+location[2]};
 			
-			if(board.getAt(loc)==null||board.getAt(loc).owner!=owner)
+			if((loc[0]|loc[1]|loc[2])>=0&&loc[0]<5&&loc[1]<5&&loc[2]<5&&(board.getAt(loc)==null||board.getAt(loc).owner!=owner))
 				valid.add(loc);
 		}
 		return valid;

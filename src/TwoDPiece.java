@@ -43,7 +43,6 @@ public class TwoDPiece {
 		}
 		w += x;
 		h += y;
-		//    overflow || intersect
 		return ((w < x || w > X) &&
 				(h < y || h > Y));
 	}
