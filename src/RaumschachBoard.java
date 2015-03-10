@@ -130,6 +130,8 @@ public class RaumschachBoard extends Board {
 			if(Arrays.equals(move, a)){
 				int[] t=piece.location;
 				Piece at=board[move[0]][move[1]][move[2]];
+				if(at!=null)
+					at.location=null;
 				//make move
 				piece.move(move);
 				board[move[0]][move[1]][move[2]]=piece;
@@ -137,6 +139,8 @@ public class RaumschachBoard extends Board {
 				piece.move(t);	//undo move
 				board[t[0]][t[1]][t[2]]=piece;
 				board[move[0]][move[1]][move[2]]=at;
+				if(at!=null)
+					at.location=new int[]{move[0],move[1],move[2]};
 				if(!g)
 					return true;
 			}
@@ -174,7 +178,7 @@ public class RaumschachBoard extends Board {
 						str.append(".");
 					else
 						str.append(this.getAt(new int[]{x,y,z}).getSymbol());
-					str.append(" ");
+				str.append(" ");
 			}
 			str.append('\n');
 		}
@@ -189,9 +193,13 @@ public class RaumschachBoard extends Board {
 			if(p instanceof Raum_King)
 				k=p.location;
 		for(Piece p:(player==WHITE)?blackpiece:whitepiece){
-			for(int[] m:p.getMoves())
-				if(Arrays.equals(m, k))
-					return true;
+			if(p.location!=null)
+				for(int[] m:p.getMoves())
+					if(Arrays.equals(m, k)){
+						System.out.println("C: "+p.getClass().getName()+" "+RaumschachBoard.moveToString(p.location)+"->"+RaumschachBoard.moveToString(m));
+						
+						return true;
+					}
 		}
 		return false;
 	}
@@ -207,29 +215,42 @@ public class RaumschachBoard extends Board {
 	}
 
 	@Override
-	public boolean isStalemate(int player) {
+	public boolean isStalemate(int player,boolean refute) {
 		for(Piece p:(player==WHITE?whitepiece:blackpiece)){
 			for(int[] m:p.getMoves()){
+				if((p instanceof Bishop))
+					System.out.println("A: "+p.getClass().getName()+" "+RaumschachBoard.moveToString(p.location)+"->"+RaumschachBoard.moveToString(m));
 				//for reversal
 				int[] t=p.location;
+				//System.out.println(p.getClass().getName()+" "+RaumschachBoard.moveToString(t)+"->"+RaumschachBoard.moveToString(m));
 				Piece at=board[m[0]][m[1]][m[2]];
+				if(at!=null)
+					at.location=null;
 				//make move
 				p.move(m);
 				board[m[0]][m[1]][m[2]]=p;
 				//test if legal
-				if(!isCheck((player+1)%2)){
+				if(!isCheck(player)){
 					//undo move
+					if(refute)
+						System.out.println("Refute:" + p.getClass().getName()+": "+RaumschachBoard.moveToString(t)+"->"+RaumschachBoard.moveToString(m));
 					p.move(t);
 					board[t[0]][t[1]][t[2]]=p;
 					board[m[0]][m[1]][m[2]]=at;
+					if(at!=null)
+						at.location=new int[]{m[0],m[1],m[2]};
+					System.out.println("yo?");
 					return false;	//legal move
 				}
 				//undo move
 				p.move(t);
 				board[t[0]][t[1]][t[2]]=p;
 				board[m[0]][m[1]][m[2]]=at;
+				if(at!=null)
+					at.location=new int[]{m[0],m[1],m[2]};
 			}
 		}
+
 		return true;
 	}
 	public static String moveToString(int[] t){
