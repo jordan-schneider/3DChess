@@ -8,7 +8,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -17,6 +16,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
 
+@SuppressWarnings("serial")
 public class TwoDPanel extends JPanel {
 	LinkedList<TwoDPiece> gpieces=new LinkedList<TwoDPiece>();
 	int pX, pY;
