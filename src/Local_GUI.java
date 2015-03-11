@@ -5,6 +5,7 @@ import javax.swing.JFrame;
  * @author Matthew
  *
  */
+@SuppressWarnings("serial")
 public class Local_GUI extends JFrame implements UI{
 	Opponent[] opps;
 	private long[] ids;
