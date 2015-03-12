@@ -6,6 +6,7 @@ public abstract class Board {
 	public static final int BLACK = 1;
 	protected List<Piece> whitepiece=new ArrayList<Piece>();
 	protected List<Piece> blackpiece=new ArrayList<Piece>();
+	
 	/**
 	 * @return All pieces on the {@code Board}.
 	 */

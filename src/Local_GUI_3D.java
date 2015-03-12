@@ -18,7 +18,7 @@ public class Local_GUI_3D extends JFrame implements UI{
 	public void init(Opponent[] opps, long[] ids, Game g) {
 		setBackground(Color.WHITE);
 
-		GLCanvas cube = new CubeCanvas();
+		GLCanvas cube = new CubeCanvas(g.board);
 		FPSAnimator animator = new FPSAnimator(cube, 60,true);
 		
 		//GLCanvas cube2 = new GLCanvas();
@@ -26,7 +26,8 @@ public class Local_GUI_3D extends JFrame implements UI{
 		JPanel data = new DataPanel();
 
 		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, cube, data); //TODO find way to make default split 75/25
-
+		split.setDividerSize(0);
+		
 		getContentPane().add(split);
 		//getContentPane().add(cube);
 
@@ -51,6 +52,9 @@ public class Local_GUI_3D extends JFrame implements UI{
 		setPreferredSize(new Dimension(width, height));
 
 		pack();
+		
+		split.setDividerLocation(0.75);
+		
 		animator.start();
 		setVisible(true);
 	}
