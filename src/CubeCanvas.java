@@ -1,35 +1,44 @@
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 
+import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.awt.GLCanvas;
 import javax.media.opengl.glu.GLU;
 
+import com.jogamp.newt.event.MouseAdapter;
+import com.jogamp.opengl.util.gl2.GLUT;
+
 import static javax.media.opengl.GL.*;  // GL constants
 import static javax.media.opengl.GL2.*; // GL2 constants
 
+import static java.lang.Math.*;
+
 @SuppressWarnings("serial")
 public class CubeCanvas extends GLCanvas implements GLEventListener{
-	public CubeCanvas() {
+
+	private Board board;
+	private float theta, phi, r;
+	private GLU glu; 
+	private GLUT glut;
+
+	public CubeCanvas(Board board) {
 		//super();
 		addGLEventListener(this);
-		setMinimumSize(new Dimension(0,0));
+		this.board = board;
+		//setMinimumSize(new Dimension(0,0)); Unnecesary for fixed size
 	}
 
-	private GLU glu;  // for the GL Utility
-
-
-	// ------ Implement methods declared in GLEventListener ------
-
-	/**
-	 * Called back immediately after the OpenGL context is initialized. Can be used
-	 * to perform one-time initialization. Run only once.
-	 */
 	@Override
 	public void init(GLAutoDrawable drawable) {		
 		GL2 gl = drawable.getGL().getGL2();      // get the OpenGL graphics context
 		glu = new GLU();                         // get GL Utilities
+		glut = new GLUT();
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // set background (clear) color
 		gl.glClearDepth(1.0f);      // set clear depth value to farthest
 		gl.glEnable(GL_DEPTH_TEST); // enables depth testing
@@ -37,13 +46,26 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 		gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
 		gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smoothes out lighting
 
-		// ----- Your OpenGL initialization code here -----
+		addMouseMotionListener(new MouseMotionListener() {
+			int x,y;
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				theta += e.getX() - x;
+				phi += e.getY() - y;
+				x = e.getX();
+				y = e.getY();
+			}
+
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				//theta = 0; phi=0;
+			}
+		});
+		
+		r = 2*max(max(board.getSize()[0], board.getSize()[1]), board.getSize()[2]);
 	}
 
-	/**
-	 * Call-back handler for window re-size event. Also called when the drawable is
-	 * first set to visible.
-	 */
 	@Override
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		GL2 gl = drawable.getGL().getGL2();  // get the OpenGL 2 graphics context
@@ -62,24 +84,43 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 		// Enable the model-view transform
 		gl.glMatrixMode(GL_MODELVIEW);
 		gl.glLoadIdentity(); // reset
+
+		// Allows transparency
+		gl.glEnable(GL_BLEND);
+		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
-	/**
-	 * Called back by the animator to perform rendering.
-	 */
+	//gl.glTranslated(-1 * board.getSize()[0] / 2, -1 * board.getSize()[1] / 2, 0); //Center's the board before generating it
+			//gl.glTranslated(0, 0, -5 * board.getSize()[2] / 2); //Center's the board before generating it
+	
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();  // get the OpenGL 2 graphics context
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity();  // reset the model-view matrix
+		gl.glColor4d(1.0, 1.0, 1.0, 0.2);
 
-		// ----- Your OpenGL rendering code here (Render a white triangle for testing) -----
-		gl.glTranslatef(0.0f, 0.0f, -6.0f); // translate into the screen
-		gl.glBegin(GL_TRIANGLES); // draw using triangles
-		gl.glVertex3f(0.0f, 1.0f, 0.0f);
-		gl.glVertex3f(-1.0f, -1.0f, 0.0f);
-		gl.glVertex3f(1.0f, -1.0f, 0.0f);
-		gl.glEnd();
+		//glu.gluLookAt(0, 0, r, 0,0,0,0,1,0);
+		
+		//gl.glTranslated(-board.getSize()[0] / -2, board.getSize()[1] / -2, board.getSize()[2] / -2); //Center's the board before generating it
+		
+		
+		
+		for(int i=0;i<board.getSize()[2];i++){
+			for(int j=0;j<board.getSize()[1];j++){
+				for(int k=0;k<board.getSize()[0];k++){
+					glut.glutSolidCube(1f);
+					gl.glTranslatef(1f, 0f, 0f);
+				}
+				gl.glTranslatef(-5f, 1f, 0f);
+			}
+			gl.glTranslatef(0f,-5f, 1f);
+		}
+		
+		gl.glTranslated(0,0,-10);
+		
+		//glu.gluLookAt(r * cos(phi) * cos(theta), r * cos(phi) * sin(theta), r * sin(phi), 0, 0, 0, sin(phi) * sin(theta), sin(phi) * cos(theta), cos(phi));
+		
 	}
 
 	/**
