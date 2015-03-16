@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 @SuppressWarnings("serial")
 public class Local_GUI extends JFrame implements UI{
 	Opponent[] opps;
+	@SuppressWarnings("unused")
 	private long[] ids;
 	public Game g;
 	@Override
