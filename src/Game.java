@@ -7,9 +7,14 @@ public class Game extends Thread{
 	Board board;
 	private Opponent[] players;
 	private long[] ids;
+	int movesIn=0;
+	long[] timeLeft=new long[2];
+	long timeOfLastAction=-1;
+	TimeControl tc;
 	int cPlayer;
 	public final UI ui;
 	boolean started;
+	boolean changed=false;
 	/**
 	 * Initializes the Game and the UI manager.
 	 * @param p1 - First player
@@ -18,13 +23,16 @@ public class Game extends Thread{
 	 * @param p2id - Second player id
 	 * @param ui - UI manager for the game
 	 */
-	public Game(Opponent p1,long p1id,Opponent p2,long p2id,UI ui){
+	public Game(Opponent p1,long p1id,Opponent p2,long p2id,UI ui,TimeControl tc){
 		players = new Opponent[2];
 		players[0]=p1;
 		players[1]=p2;
 		board = new RaumschachBoard(players[0],players[1]);
 		cPlayer = 0;
 		started = false;
+		this.tc=tc;
+		timeLeft[0]=tc.sTime[0]*1000;
+		timeLeft[1]=tc.sTime[1]*1000;
 		p1.init(this, p1id);
 		p2.init(this, p2id);
 		ids=new long[]{p1id,p2id};
@@ -34,14 +42,35 @@ public class Game extends Thread{
 	public void start(){
 		this.started=true;
 		super.start();
+		
+	}
+	public synchronized void playerChanged(){
+		changed=true;
+		System.out.println("Yo");
+	}
+	public synchronized boolean getPlayerChanged(){
+		if(changed){
+			changed=false;
+			return true;
+		}
+		return false;
 	}
 	public void run(){
-		while(!board.isStalemate(cPlayer)){
+		while(!board.isStalemate(cPlayer)&&timeLeft[1-cPlayer]>0){
+			System.out.println("everywhere");
 			int ctemp=cPlayer;
 			players[cPlayer].requestMove();
-			while(cPlayer==ctemp){}
-
+			timeOfLastAction=System.currentTimeMillis();
+			timeLeft[cPlayer]+=tc.incr[cPlayer]*1000;
+			
+			while(!getPlayerChanged()&&(System.currentTimeMillis()-timeOfLastAction+tc.delay[cPlayer]*1000)<timeLeft[cPlayer]);
+			System.out.println("here");
+			if(cPlayer==ctemp)
+				break;
+			else if(System.currentTimeMillis()-timeOfLastAction>1000*tc.delay[1-cPlayer])
+				timeLeft[1-cPlayer]+=timeOfLastAction-System.currentTimeMillis()+1000*tc.delay[1-cPlayer];
 		}
+		System.out.println("there");
 	}
 	/**
 	 * Attempts to make a piece move from one location to another.
@@ -69,6 +98,7 @@ public class Game extends Thread{
 		board.getAt(moveSpot).move(moveSpot);
 		board.setAt(null,pieceSpot);
 		cPlayer=(cPlayer+1)%2;
+		playerChanged();
 		return true;
 	}
 }
