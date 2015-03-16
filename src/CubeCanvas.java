@@ -1,37 +1,37 @@
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.nio.Buffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
-import javax.media.opengl.GL;
-import javax.media.opengl.GL2;
-import javax.media.opengl.GLAutoDrawable;
-import javax.media.opengl.GLEventListener;
-import javax.media.opengl.awt.GLCanvas;
-import javax.media.opengl.glu.GLU;
-
-import com.jogamp.newt.event.MouseAdapter;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GLArrayData;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import static javax.media.opengl.GL.*;  // GL constants
-import static javax.media.opengl.GL2.*; // GL2 constants
-
+import static com.jogamp.opengl.GL2.*;
 import static java.lang.Math.*;
 
 @SuppressWarnings("serial")
 public class CubeCanvas extends GLCanvas implements GLEventListener{
 
 	private Board board;
-	private float theta, phi, r;
+	private double theta = 0, phi = 0, r;
 	private GLU glu; 
 	private GLUT glut;
+	float[] vertexArray;
+	FloatBuffer vertexBuffer;
+	int[] indexArray;
+	IntBuffer indexBuffer;
 
 	public CubeCanvas(Board board) {
-		//super();
 		addGLEventListener(this);
 		this.board = board;
-		//setMinimumSize(new Dimension(0,0)); Unnecesary for fixed size
 	}
 
 	@Override
@@ -51,19 +51,20 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				theta += e.getX() - x;
-				phi += e.getY() - y;
+				theta += (x - e.getX()) / 500.0;
+				phi += (y - e.getY()) / 500.0;
 				x = e.getX();
 				y = e.getY();
 			}
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				//theta = 0; phi=0;
+				x = e.getX();
+				y = e.getY();
 			}
 		});
-		
-		r = 2*max(max(board.getSize()[0], board.getSize()[1]), board.getSize()[2]);
+
+		r = 2.0 * max(max(board.getSize()[0], board.getSize()[1]), board.getSize()[2]);
 	}
 
 	@Override
@@ -88,39 +89,100 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 		// Allows transparency
 		gl.glEnable(GL_BLEND);
 		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		//Sets up vertex arrays
+		/*
+		vertexArray = new float[(1 + board.getSize()[0]) * 
+		                        (1 + board.getSize()[1]) * 
+		                        (1 + board.getSize()[2]) * 
+		                        3 //three dimension values per vertex
+ 		                        ];
+		
+		for(int i=0;i<=board.getSize()[2];i++){
+			for(int j=0;j<=board.getSize()[1];j++){
+				for(int k=0;k<=board.getSize()[0];k++){
+					vertexArray[
+					            (
+					            		i * (1 + board.getSize()[0]) +
+					            		j * (1 + board.getSize()[1]) + 
+					            		k
+					            ) * 3
+					            ] = k;
+					vertexArray[
+					            (
+					            		i * (1 + board.getSize()[0]) +
+					            		j * (1 + board.getSize()[1]) + 
+					            		k
+					            ) * 3 + 1
+					            ] = j;
+					vertexArray[
+					            (
+					            		i * (1 + board.getSize()[0]) +
+					            		j * (1 + board.getSize()[1]) + 
+					            		k
+					            ) * 3 + 2
+					            ] = i;
+				}
+			}
+		}
+		
+		vertexBuffer = FloatBuffer.wrap(vertexArray);
+		
+		indexArray = new int[5]; //TODO figure out how many indices I'll need	
+		*/	
 	}
 
 	//gl.glTranslated(-1 * board.getSize()[0] / 2, -1 * board.getSize()[1] / 2, 0); //Center's the board before generating it
-			//gl.glTranslated(0, 0, -5 * board.getSize()[2] / 2); //Center's the board before generating it
-	
+	//gl.glTranslated(0, 0, -5 * board.getSize()[2] / 2); //Center's the board before generating it
+
+	//If using glTranslate, the camera is fixed at 0,0,0 and the translations only affect the placmenet of objects
+	//glTranslate calls after generating objects do nothing
+	//glRotate operates in the same fashion
+
+	//gluLookAt also only works if placed before object generation
+
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2();  // get the OpenGL 2 graphics context
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity();  // reset the model-view matrix
+
 		gl.glColor4d(1.0, 1.0, 1.0, 0.2);
 
-		//glu.gluLookAt(0, 0, r, 0,0,0,0,1,0);
+		System.out.println("Phi is " + phi + " and theta is " + theta);
 		
-		//gl.glTranslated(-board.getSize()[0] / -2, board.getSize()[1] / -2, board.getSize()[2] / -2); //Center's the board before generating it
+		//glutSolidCube centers the cube at the origin so I have to shift back 1/2 the lengh of the cube
+		double x_0 = board.getSize()[0] / 2.0 - .5;
+		double y_0 = board.getSize()[1] / 2.0 - .5;
+		double z_0 = board.getSize()[2] / 2.0 - .5;
 		
+		glu.gluLookAt(
+				r * cos(phi) * sin(theta) + x_0, r * sin(phi) + y_0, r * cos(phi) * cos(theta) + z_0,
+				x_0, y_0, z_0,
+				sin(phi) * sin(theta), abs(cos(phi)), sin(phi) * cos(theta));
 		
+		/*
+		//TODO sort indexArray before making into buffer
 		
+		IntBuffer indexBuffer = IntBuffer.wrap(indexArray);
+		
+		gl.glEnableClientState(GL_VERTEX_ARRAY);
+		gl.glVertexPointer(3, GL_FLOAT, 0, vertexBuffer);
+		
+		gl.glDrawElements(GL_QUADS, 1, GL_FLOAT, indexBuffer);
+		*/
+		
+		//This will be depricated as soon as I make Vertex Arrays work
 		for(int i=0;i<board.getSize()[2];i++){
 			for(int j=0;j<board.getSize()[1];j++){
 				for(int k=0;k<board.getSize()[0];k++){
 					glut.glutSolidCube(1f);
 					gl.glTranslatef(1f, 0f, 0f);
 				}
-				gl.glTranslatef(-5f, 1f, 0f);
+				gl.glTranslatef(-1 * board.getSize()[0], 1f, 0f);
 			}
-			gl.glTranslatef(0f,-5f, 1f);
+			gl.glTranslatef(0f,-1 * board.getSize()[1], 1f);
 		}
-		
-		gl.glTranslated(0,0,-10);
-		
-		//glu.gluLookAt(r * cos(phi) * cos(theta), r * cos(phi) * sin(theta), r * sin(phi), 0, 0, 0, sin(phi) * sin(theta), sin(phi) * cos(theta), cos(phi));
-		
 	}
 
 	/**
