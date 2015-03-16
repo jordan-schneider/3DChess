@@ -1,13 +1,9 @@
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GL2ES2;
-import com.jogamp.opengl.GLArrayData;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -91,7 +87,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		//Sets up vertex arrays
-		/*
+		
 		vertexArray = new float[(1 + board.getSize()[0]) * 
 		                        (1 + board.getSize()[1]) * 
 		                        (1 + board.getSize()[2]) * 
@@ -129,7 +125,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 		vertexBuffer = FloatBuffer.wrap(vertexArray);
 		
 		indexArray = new int[5]; //TODO figure out how many indices I'll need	
-		*/	
+		
 	}
 
 	//gl.glTranslated(-1 * board.getSize()[0] / 2, -1 * board.getSize()[1] / 2, 0); //Center's the board before generating it
@@ -161,7 +157,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 				x_0, y_0, z_0,
 				sin(phi) * sin(theta), abs(cos(phi)), sin(phi) * cos(theta));
 		
-		/*
+		
 		//TODO sort indexArray before making into buffer
 		
 		IntBuffer indexBuffer = IntBuffer.wrap(indexArray);
@@ -170,7 +166,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener{
 		gl.glVertexPointer(3, GL_FLOAT, 0, vertexBuffer);
 		
 		gl.glDrawElements(GL_QUADS, 1, GL_FLOAT, indexBuffer);
-		*/
+		
 		
 		//This will be depricated as soon as I make Vertex Arrays work
 		for(int i=0;i<board.getSize()[2];i++){

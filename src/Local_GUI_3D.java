@@ -37,6 +37,7 @@ public class Local_GUI_3D extends JFrame implements UI{
 				// Use a dedicate thread to run the stop() to ensure that the
 				// animator stops before program exits.
 				new Thread() {
+					@SuppressWarnings("deprecation")
 					@Override
 					public void run() {
 						if (cube.getAnimator().isStarted()) cube.getAnimator().stop();
