@@ -4,11 +4,11 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 
 @SuppressWarnings("serial")
@@ -37,6 +37,7 @@ public class Local_GUI_3D extends JFrame implements UI{
 				// Use a dedicate thread to run the stop() to ensure that the
 				// animator stops before program exits.
 				new Thread() {
+					@SuppressWarnings("deprecation")
 					@Override
 					public void run() {
 						if (cube.getAnimator().isStarted()) cube.getAnimator().stop();
