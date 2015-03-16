@@ -22,6 +22,7 @@ public class TwoDPanel extends JPanel {
 	int pX, pY;
 	BufferedImage black = null;
 	BufferedImage white = null;
+	long lastPainted=-100;
 	int[] from;
 	int[] fromcoord;
 	int[] atCheckSquare=null;
@@ -71,8 +72,27 @@ public class TwoDPanel extends JPanel {
 						g2d.drawImage(white,20*(z+1)+40*(5*z+x), 40*(4-y)+40,40,40,null);
 				}
 		//(1080)+20 , 240
-
-
+		String whiteTime;
+		String blackTime;
+		
+		if(gui.g.cPlayer==Board.WHITE){
+			if(System.currentTimeMillis()-gui.g.timeOfLastAction>1000*gui.g.tc.delay[Board.WHITE])
+				whiteTime=TimeControl.timeToString(gui.g.timeLeft[Board.WHITE]+gui.g.timeOfLastAction-System.currentTimeMillis()+1000*gui.g.tc.delay[Board.WHITE]);
+			else
+				whiteTime=TimeControl.timeToString(gui.g.timeLeft[Board.WHITE]);
+			blackTime=TimeControl.timeToString(gui.g.timeLeft[Board.BLACK]);
+		}else{
+			if(System.currentTimeMillis()-gui.g.timeOfLastAction>1000*gui.g.tc.delay[Board.BLACK])
+				blackTime=TimeControl.timeToString(gui.g.timeLeft[Board.BLACK]+gui.g.timeOfLastAction-System.currentTimeMillis()+1000*gui.g.tc.delay[Board.BLACK]);
+			else
+				blackTime=TimeControl.timeToString(gui.g.timeLeft[Board.BLACK]);
+			whiteTime=TimeControl.timeToString(gui.g.timeLeft[Board.WHITE]);
+		}
+		g2d.setColor(Color.BLACK);
+		g2d.drawString(blackTime,960,20);
+		g2d.setColor(Color.WHITE);
+		g2d.drawString(whiteTime, 10, 260);
+		
 
 		if (isFirstTime) {
 			area = new Rectangle(getPreferredSize());
@@ -89,6 +109,7 @@ public class TwoDPanel extends JPanel {
 		g.setColor(Color.YELLOW);
 		for(int[] i:highlight)
 			g2d.drawRect(getLocationCorner(i)[0], getLocationCorner(i)[1], 40, 40);
+		lastPainted=System.currentTimeMillis();
 	}
 	boolean checkRect() {
 		if (area==null||area.contains(whichPiece.x, whichPiece.y, whichPiece.getWidth(), whichPiece.getHeight()))
@@ -173,8 +194,11 @@ public class TwoDPanel extends JPanel {
 						whichPiece.setLocation(fromcoord[0], fromcoord[1]);
 				}else
 					whichPiece.setLocation(fromcoord[0], fromcoord[1]);
-			} else 
+			} else{
+				if(whichPiece!=null&&fromcoord!=null)
+					whichPiece.setLocation(fromcoord[0], fromcoord[1]);
 				pressz = false;
+			}
 			whichPiece=null;
 			highlight.clear();
 		}
