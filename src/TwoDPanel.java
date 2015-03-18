@@ -22,6 +22,7 @@ public class TwoDPanel extends JPanel {
 	int pX, pY;
 	BufferedImage black = null;
 	BufferedImage white = null;
+	BufferedImage background = null;
 	long lastPainted=-100;
 	int[] from;
 	int[] fromcoord;
@@ -36,12 +37,13 @@ public class TwoDPanel extends JPanel {
 		this.gui=gui;
 		try {
 			black = ImageIO.read(new File("Blackboard.gif"));
-		} catch (IOException e) {
-		}
+		} catch (IOException e) {}
 		try {
 			white = ImageIO.read(new File("WhiteBoard.gif"));
-		} catch (IOException e) {
-		}
+		} catch (IOException e) {}
+		try { 
+			background = ImageIO.read(new File("background.jpg"));
+		}catch (IOException e){}
 		setBackground(Color.LIGHT_GRAY);
 		addMouseMotionListener(new DragAdapter());
 		addMouseListener(new DragAdapter());
@@ -63,6 +65,8 @@ public class TwoDPanel extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D) g;
+		if(background!=null)
+			g2d.drawImage(background,0,0,null);
 		for(int z=0;z<5;z++)
 			for(int x=0;x<5;x++)
 				for(int y=0;y<5;y++){
@@ -72,26 +76,10 @@ public class TwoDPanel extends JPanel {
 						g2d.drawImage(white,20*(z+1)+40*(5*z+x), 40*(4-y)+40,40,40,null);
 				}
 		//(1080)+20 , 240
-		String whiteTime;
-		String blackTime;
-		
-		if(gui.g.cPlayer==Board.WHITE){
-			if(System.currentTimeMillis()-gui.g.timeOfLastAction>1000*gui.g.tc.delay[Board.WHITE])
-				whiteTime=TimeControl.timeToString(gui.g.timeLeft[Board.WHITE]+gui.g.timeOfLastAction-System.currentTimeMillis()+1000*gui.g.tc.delay[Board.WHITE]);
-			else
-				whiteTime=TimeControl.timeToString(gui.g.timeLeft[Board.WHITE]);
-			blackTime=TimeControl.timeToString(gui.g.timeLeft[Board.BLACK]);
-		}else{
-			if(System.currentTimeMillis()-gui.g.timeOfLastAction>1000*gui.g.tc.delay[Board.BLACK])
-				blackTime=TimeControl.timeToString(gui.g.timeLeft[Board.BLACK]+gui.g.timeOfLastAction-System.currentTimeMillis()+1000*gui.g.tc.delay[Board.BLACK]);
-			else
-				blackTime=TimeControl.timeToString(gui.g.timeLeft[Board.BLACK]);
-			whiteTime=TimeControl.timeToString(gui.g.timeLeft[Board.WHITE]);
-		}
 		g2d.setColor(Color.BLACK);
-		g2d.drawString(blackTime,960,20);
+		g2d.drawString(gui.g.getTime(Board.BLACK),960,20);
 		g2d.setColor(Color.WHITE);
-		g2d.drawString(whiteTime, 10, 260);
+		g2d.drawString(gui.g.getTime(Board.WHITE), 10, 260);
 		
 
 		if (isFirstTime) {
