@@ -58,4 +58,5 @@ public abstract class Board {
 	 * @return {@code true} if {@code player} is in check
 	 */
 	public abstract boolean isCheck(int player);
+	public abstract void reset();
 }

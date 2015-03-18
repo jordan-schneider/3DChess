@@ -4,117 +4,16 @@ import java.util.Arrays;
 
 public class RaumschachBoard extends Board {
 	Piece[][][] board;
-
+	Opponent white,black;
 
 	public RaumschachBoard(Opponent white, Opponent black) {
 		board = new Piece[5][5][5];
+		this.white=white;
+		this.black=black;
 
 		//Handling black's pieces
 		//Using layout defined by http://www.chessvariants.org/3d.dir/3d5.html
-		King king = new Raum_King(2,4,4,BLACK,this);
-		black.add(king);
-		add(king);
-
-		Rook rook = new Rook(0,4,4,BLACK,this);
-		black.add(rook);
-		add(rook);
-
-		rook = new Rook(4,4,4,BLACK,this);
-		black.add(rook);
-		add(rook);
-
-		Knight knight = new Knight(1,4,4,BLACK,this);
-		black.add(knight);
-		add(knight);
-
-		knight = new Knight(3,4,4,BLACK,this);
-		black.add(knight);
-		add(knight);
-
-		Pawn pawn;
-		for(int z=3;z<5;z++){
-			for(int x=0;x<5;x++){
-				pawn = new Pawn(x,3,z,BLACK,this);
-				black.add(pawn);
-				add(pawn);
-			}
-		}
-
-		Queen queen = new Queen(2,4,3,BLACK,this);
-		black.add(queen);
-		add(queen);
-
-		Bishop bishop = new Bishop(0,4,3,BLACK,this);
-		black.add(bishop);
-		add(bishop);
-
-		bishop = new Bishop(4,4,3,BLACK,this);
-		black.add(bishop);
-		add(bishop);
-
-		Unicorn unicorn = new Unicorn(1,4,3,BLACK,this);
-		black.add(unicorn);
-		add(unicorn);
-
-		unicorn = new Unicorn(3,4,3,BLACK,this);
-		black.add(unicorn);
-		add(unicorn);
-
-		//TODO finish white later
-		king = new Raum_King(2,0,0,WHITE,this);
-		white.add(king);
-		add(king);
-
-		rook = new Rook(0,0,0,WHITE,this);
-		white.add(rook);
-		add(rook);
-
-		rook = new Rook(4,0,0,WHITE,this);
-		white.add(rook);
-		add(rook);
-
-		knight = new Knight(1,0,0,WHITE,this);
-		white.add(knight);
-		add(knight);
-
-		knight = new Knight(3,0,0,WHITE,this);
-		white.add(knight);
-		add(knight);
-
-		for(int z=0;z<2;z++){
-			for(int x=0;x<5;x++){
-				pawn = new Pawn(x,1,z,WHITE,this);
-				white.add(pawn);
-				add(pawn);
-			}
-		}
-
-		queen = new Queen(2,0,1,WHITE,this);
-		white.add(queen);
-		add(queen);
-
-		bishop = new Bishop(0,0,1,WHITE,this);
-		white.add(bishop);
-		add(bishop);
-
-		bishop = new Bishop(4,0,1,WHITE,this);
-		white.add(bishop);
-		add(bishop);
-
-		unicorn = new Unicorn(1,0,1,WHITE,this);
-		white.add(unicorn);
-		add(unicorn);
-
-		unicorn = new Unicorn(3,0,1,WHITE,this);
-		white.add(unicorn);
-		add(unicorn);
-		for(int i=0;i<5;i++)
-			for(int j=0;j<5;j++)
-				for(int k=0;k<5;k++)
-					if(board[i][j][k]!=null&&board[i][j][k].owner==RaumschachBoard.WHITE)
-						whitepiece.add(board[i][j][k]);
-					else if(board[i][j][k]!=null)
-						blackpiece.add(board[i][j][k]);
+		reset();
 	}
 
 	private void add(Piece piece) {
@@ -255,5 +154,118 @@ public class RaumschachBoard extends Board {
 	public static String moveToString(int[] t){
 		byte[] b=new byte[]{(byte)(t[2]+'A'),(byte)(t[0]+'a'),(byte)(t[1]+'1')};
 		return new String(b);
+	}
+
+	@Override
+	public void reset() {
+		black.pieces.clear();
+		white.pieces.clear();
+		whitepiece.clear();
+		blackpiece.clear();
+		King king = new Raum_King(2,4,4,BLACK,this);
+		black.add(king);
+		add(king);
+
+		Rook rook = new Rook(0,4,4,BLACK,this);
+		black.add(rook);
+		add(rook);
+
+		rook = new Rook(4,4,4,BLACK,this);
+		black.add(rook);
+		add(rook);
+
+		Knight knight = new Knight(1,4,4,BLACK,this);
+		black.add(knight);
+		add(knight);
+
+		knight = new Knight(3,4,4,BLACK,this);
+		black.add(knight);
+		add(knight);
+
+		Pawn pawn;
+		for(int z=3;z<5;z++){
+			for(int x=0;x<5;x++){
+				pawn = new Pawn(x,3,z,BLACK,this);
+				black.add(pawn);
+				add(pawn);
+			}
+		}
+
+		Queen queen = new Queen(2,4,3,BLACK,this);
+		black.add(queen);
+		add(queen);
+
+		Bishop bishop = new Bishop(0,4,3,BLACK,this);
+		black.add(bishop);
+		add(bishop);
+
+		bishop = new Bishop(4,4,3,BLACK,this);
+		black.add(bishop);
+		add(bishop);
+
+		Unicorn unicorn = new Unicorn(1,4,3,BLACK,this);
+		black.add(unicorn);
+		add(unicorn);
+
+		unicorn = new Unicorn(3,4,3,BLACK,this);
+		black.add(unicorn);
+		add(unicorn);
+
+		//TODO finish white later
+		king = new Raum_King(2,0,0,WHITE,this);
+		white.add(king);
+		add(king);
+
+		rook = new Rook(0,0,0,WHITE,this);
+		white.add(rook);
+		add(rook);
+
+		rook = new Rook(4,0,0,WHITE,this);
+		white.add(rook);
+		add(rook);
+
+		knight = new Knight(1,0,0,WHITE,this);
+		white.add(knight);
+		add(knight);
+
+		knight = new Knight(3,0,0,WHITE,this);
+		white.add(knight);
+		add(knight);
+
+		for(int z=0;z<2;z++){
+			for(int x=0;x<5;x++){
+				pawn = new Pawn(x,1,z,WHITE,this);
+				white.add(pawn);
+				add(pawn);
+			}
+		}
+
+		queen = new Queen(2,0,1,WHITE,this);
+		white.add(queen);
+		add(queen);
+
+		bishop = new Bishop(0,0,1,WHITE,this);
+		white.add(bishop);
+		add(bishop);
+
+		bishop = new Bishop(4,0,1,WHITE,this);
+		white.add(bishop);
+		add(bishop);
+
+		unicorn = new Unicorn(1,0,1,WHITE,this);
+		white.add(unicorn);
+		add(unicorn);
+
+		unicorn = new Unicorn(3,0,1,WHITE,this);
+		white.add(unicorn);
+		add(unicorn);
+		for(int i=0;i<5;i++)
+			for(int j=0;j<5;j++)
+				for(int k=0;k<5;k++)
+					if(board[i][j][k]!=null&&board[i][j][k].owner==RaumschachBoard.WHITE)
+						whitepiece.add(board[i][j][k]);
+					else if(board[i][j][k]!=null)
+						blackpiece.add(board[i][j][k]);
+		
 	}
 }
