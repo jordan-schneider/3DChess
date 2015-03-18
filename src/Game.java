@@ -7,14 +7,14 @@ public class Game extends Thread{
 	Board board;
 	private Opponent[] players;
 	private long[] ids;
-	int movesIn=0;
+	int movesIn;
 	long[] timeLeft=new long[2];
-	long timeOfLastAction=-1;
+	long timeOfLastAction;
 	TimeControl tc;
 	int cPlayer;
 	public final UI ui;
 	boolean started;
-	boolean changed=false;
+	boolean changed;
 	/**
 	 * Initializes the Game and the UI manager.
 	 * @param p1 - First player
@@ -29,7 +29,10 @@ public class Game extends Thread{
 		players[1]=p2;
 		board = new RaumschachBoard(players[0],players[1]);
 		cPlayer = 0;
+		movesIn=0;
+		timeOfLastAction=-1;
 		started = false;
+		changed = false;
 		this.tc=tc;
 		timeLeft[0]=tc.sTime[0]*1000;
 		timeLeft[1]=tc.sTime[1]*1000;
@@ -37,16 +40,42 @@ public class Game extends Thread{
 		p2.init(this, p2id);
 		ids=new long[]{p1id,p2id};
 		this.ui=ui;
-		ui.init(players,ids,this);
+	}
+	boolean kill=false;
+	public synchronized void reset(){
+		kill = true;
+		board.reset();
+		timeLeft[0]=tc.sTime[0]*1000;
+		timeLeft[1]=tc.sTime[1]*1000;
+		cPlayer = 0;
+		movesIn=0;
+		timeOfLastAction=-1;
+		changed = false;
+		System.out.println("Killed");
 	}
 	public void start(){
-		this.started=true;
-		super.start();
-		
+		if(!started){
+			this.started=true;
+			super.start();
+		}else{
+			this.run();
+		}
+
+	}
+	long pausedAt=-1;
+	long unPausedAt=-1;
+	public synchronized void pauseGame(){
+		if(pausedAt!=-1||unPausedAt!=-1)
+			return;
+		pausedAt=System.currentTimeMillis();
+	}
+	public synchronized void unPauseGame(){
+		if(pausedAt==-1||unPausedAt!=-1)
+			return;
+		unPausedAt=System.currentTimeMillis();
 	}
 	public synchronized void playerChanged(){
 		changed=true;
-		System.out.println("Yo");
 	}
 	public synchronized boolean getPlayerChanged(){
 		if(changed){
@@ -55,15 +84,60 @@ public class Game extends Thread{
 		}
 		return false;
 	}
+
+	//Fix for paused time
+	public String getTime(int player){
+		long ztime;
+		if(pausedAt!=-1)
+			ztime=pausedAt;
+		else
+			ztime=System.currentTimeMillis();
+		if(cPlayer==Board.WHITE){
+			if(player==Board.WHITE)
+				if(ztime-timeOfLastAction>1000*tc.delay[Board.WHITE])
+					return TimeControl.timeToString(timeLeft[Board.WHITE]+timeOfLastAction-ztime+1000*tc.delay[Board.WHITE]);
+				else
+					return TimeControl.timeToString(timeLeft[Board.WHITE]);
+			return TimeControl.timeToString(timeLeft[Board.BLACK]);
+		}else{
+			if(player==Board.BLACK)
+				if(ztime-timeOfLastAction>1000*tc.delay[Board.BLACK])
+					return TimeControl.timeToString(timeLeft[Board.BLACK]+timeOfLastAction-ztime+1000*tc.delay[Board.BLACK]);
+				else
+					return TimeControl.timeToString(timeLeft[Board.BLACK]);
+			return TimeControl.timeToString(timeLeft[Board.WHITE]);
+		}
+	}
 	public void run(){
 		while(!board.isStalemate(cPlayer)&&timeLeft[1-cPlayer]>0){
 			System.out.println("everywhere");
+			if(kill)
+				break;
 			int ctemp=cPlayer;
 			players[cPlayer].requestMove();
 			timeOfLastAction=System.currentTimeMillis();
 			timeLeft[cPlayer]+=tc.incr[cPlayer]*1000;
-			
-			while(!getPlayerChanged()&&(System.currentTimeMillis()-timeOfLastAction+tc.delay[cPlayer]*1000)<timeLeft[cPlayer]);
+
+			while(!kill&&((pausedAt!=-1)||!getPlayerChanged()&&(System.currentTimeMillis()-timeOfLastAction+tc.delay[cPlayer]*1000)<timeLeft[cPlayer])){
+				try {
+					Thread.sleep(0,50);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				if(kill)
+					break;
+				if(pausedAt!=-1){
+					if(unPausedAt!=-1){
+						System.out.println("GG");
+						timeOfLastAction+=unPausedAt-pausedAt;
+						unPausedAt=-1;
+						pausedAt=-1;
+					}
+				}
+			}
+			if(kill)
+				break;
+
 			System.out.println("here");
 			if(cPlayer==ctemp)
 				break;
@@ -71,6 +145,7 @@ public class Game extends Thread{
 				timeLeft[1-cPlayer]+=timeOfLastAction-System.currentTimeMillis()+1000*tc.delay[1-cPlayer];
 		}
 		System.out.println("there");
+		kill=false;
 	}
 	/**
 	 * Attempts to make a piece move from one location to another.
