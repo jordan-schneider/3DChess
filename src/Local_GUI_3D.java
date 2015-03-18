@@ -21,15 +21,12 @@ public class Local_GUI_3D extends JFrame implements UI{
 		GLCanvas cube = new CubeCanvas(g.board);
 		FPSAnimator animator = new FPSAnimator(cube, 60,true);
 		
-		//GLCanvas cube2 = new GLCanvas();
-		
 		JPanel data = new DataPanel();
 
 		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, cube, data); //TODO find way to make default split 75/25
 		split.setDividerSize(0);
 		
 		getContentPane().add(split);
-		//getContentPane().add(cube);
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -62,7 +59,6 @@ public class Local_GUI_3D extends JFrame implements UI{
 
 	@Override
 	public void getMove(long id) {
-		// TODO Auto-generated method stub
 		// BULLSHIT LEGACY CODE
 	}
 
