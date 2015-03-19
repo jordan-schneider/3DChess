@@ -29,6 +29,7 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
+import com.sun.prism.impl.BufferUtil;
 
 /**
  * Canvas on which the board is rendered. Almost all the graphics code resides here, and all of the 3D code does.
@@ -52,7 +53,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Creates a Canvas to render a given board
-	 * 
+	 *
 	 * @param board
 	 *            to render
 	 */
@@ -73,9 +74,9 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glColor4d(1.0, 1.0, 1.0, 0.2); // use a transparent color
 
 		// glutSolidCube centers the cube at the origin so I have to shift back 1/2 the length of the cube
-		double x_0 = boardX / 2.0 - .5;
-		double y_0 = boardY / 2.0 - .5;
-		double z_0 = boardZ / 2.0 - .5;
+		double x_0 = this.boardX / 2.0 - .5;
+		double y_0 = this.boardY / 2.0 - .5;
+		double z_0 = this.boardZ / 2.0 - .5;
 
 		double cameraX = this.r * cos(this.phi) * sin(this.theta) + x_0;
 		double cameraY = this.r * sin(this.phi) + y_0;
@@ -87,8 +88,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.glu.gluLookAt(cameraX, cameraY, cameraZ, x_0, y_0, z_0, upX, upY,
 				upZ); // Polar conversion + phi is from x-z plane instead of y axis
 
-
 		// TODO sort indexArray before making into buffer
+		this.indexBuffer = faceSort(cameraX, cameraY, cameraZ);
 
 		IntBuffer indexBuffer = IntBuffer.wrap(this.indexArray);
 
@@ -98,20 +99,35 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glDrawElements(GL_QUADS, 1, GL_FLOAT, indexBuffer);
 
 		// This will be depricated as soon as I make Vertex Arrays work
-		for (int i = 0; i < boardZ; i++) {
-			for (int j = 0; j < boardY; j++) {
-				for (int k = 0; k < boardX; k++) {
+		for (int i = 0; i < this.boardZ; i++) {
+			for (int j = 0; j < this.boardY; j++) {
+				for (int k = 0; k < this.boardX; k++) {
 					this.glut.glutSolidCube(1f);
 					gl.glTranslatef(1f, 0f, 0f);
 				}
-				gl.glTranslatef(-1 * boardX, 1f, 0f);
+				gl.glTranslatef(-1 * this.boardX, 1f, 0f);
 			}
-			gl.glTranslatef(0f, -1 * boardY, 1f);
+			gl.glTranslatef(0f, -1 * this.boardY, 1f);
 		}
 	}
 
 	@Override
 	public void dispose(GLAutoDrawable drawable) {
+	}
+
+	private void exchange(int i, int j) {
+		int temp = this.indexArray[i];
+		this.indexArray[i] = this.indexArray[j];
+		this.indexArray[j] = temp;
+	}
+
+	// TODO reprogram this blatantly stolen quicksort code and make it work on distance and not value in the array
+	private IntBuffer faceSort(double x, double y, double z) {
+		if (this.indexArray == null || this.indexArray.length == 0) {
+			return null;
+		}
+		quicksort(0, this.indexArray.length - 1);
+		return BufferUtil.newIntBuffer(indexArray.length).put(indexArray);
 	}
 
 	@Override
@@ -145,19 +161,20 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			}
 		});
 
-		this.r = 2.0 * max(max(boardX, boardY),boardZ);
+		this.r = 2.0 * max(max(this.boardX, this.boardY), this.boardZ);
 
 		// Sets up vertex arrays
-		this.vertexArray = new float[ (1 + boardX)
-		                              * (1 + boardY) * (1 + boardZ)
-		                              * 3 // three dimension values per vertex
-		                              ];
+		this.vertexArray = new float[ (1 + this.boardX)
+				* (1 + this.boardY) * (1 + this.boardZ)
+				* 3 // three dimension values per vertex
+		];
 
 		// Hoping it wants the vertices in (x,y,z) format
 		for (int z = 0; z <= this.boardZ; z++) {
 			for (int y = 0; y <= this.boardY; y++) {
 				for (int x = 0; x <= this.boardX; x++) {
-					int base = 3 * (x + y * (1 + boardX) + z * (1 + boardX) * (1 + boardY));
+					int base = 3 * (x + y * (1 + this.boardX) + z
+							* (1 + this.boardX) * (1 + this.boardY));
 					this.vertexArray[base] = x;
 					this.vertexArray[base + 1] = y;
 					this.vertexArray[base + 2] = z;
@@ -165,60 +182,94 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			}
 		}
 
-		this.vertexBuffer = FloatBuffer.wrap(this.vertexArray);
+		this.vertexBuffer = BufferUtil.newFloatBuffer(this.vertexArray.length);
+		this.vertexBuffer.put(this.vertexArray);
+		this.vertexBuffer.rewind();
 
-		this.indexArray = new int[12 * 3 * (1 + boardX) * (1 + boardY) * (1 + boardZ)];
-		for(int dimension=0;dimension<3;dimension++){ //let dimension(0) = x, dimension(1) = y, ...
-			for(int z=0;z<=boardZ;z++){
-				for(int y=0;y<=boardY;y++){
-					for(int x=0;z<=boardX;z++){
-						int base = 12 * (x + y * (1 + boardX) + z * (1 + boardX) * (1 + boardY) + dimension * (1 + boardX) * (1 + boardY) * (1 + boardZ));
-						if(base == 0){ //Do the sides in the y-z plane first
-							indexArray[base] = x;
-							indexArray[base+1] = y;
-							indexArray[base+2] = z;
-							indexArray[base+3] = x;
-							indexArray[base+4] = y;
-							indexArray[base+5] = z+1;
-							indexArray[base+6] = x;
-							indexArray[base+7] = y+1;
-							indexArray[base+8] = z+1;
-							indexArray[base+9] = x;
-							indexArray[base+10] = y+1;
-							indexArray[base+11] = z;
+		this.indexArray = new int[12 * 3 * (1 + this.boardX)
+				* (1 + this.boardY) * (1 + this.boardZ)];
+		for (int dimension = 0; dimension < 3; dimension++) { // let dimension(0) = x, dimension(1) = y, ...
+			for (int z = 0; z <= this.boardZ; z++) {
+				for (int y = 0; y <= this.boardY; y++) {
+					for (int x = 0; z <= this.boardX; z++) {
+						int base = 12 * (x + y * (1 + this.boardX) + z
+								* (1 + this.boardX) * (1 + this.boardY) + dimension
+								* (1 + this.boardX)
+								* (1 + this.boardY)
+								* (1 + this.boardZ));
+						if (base == 0) { // Do the sides in the y-z plane first
+							this.indexArray[base] = x;
+							this.indexArray[base + 1] = y;
+							this.indexArray[base + 2] = z;
+							this.indexArray[base + 3] = x;
+							this.indexArray[base + 4] = y;
+							this.indexArray[base + 5] = z + 1;
+							this.indexArray[base + 6] = x;
+							this.indexArray[base + 7] = y + 1;
+							this.indexArray[base + 8] = z + 1;
+							this.indexArray[base + 9] = x;
+							this.indexArray[base + 10] = y + 1;
+							this.indexArray[base + 11] = z;
 						}
-						else if(base == 1){ //Then in the x-z
-							indexArray[base] = x;
-							indexArray[base+1] = y;
-							indexArray[base+2] = z;
-							indexArray[base+3] = x+1;
-							indexArray[base+4] = y;
-							indexArray[base+5] = z;
-							indexArray[base+6] = x+1;
-							indexArray[base+7] = y;
-							indexArray[base+8] = z+1;
-							indexArray[base+9] = x;
-							indexArray[base+10] = y;
-							indexArray[base+11] = z+1;
+						else if (base == 1) { // Then in the x-z
+							this.indexArray[base] = x;
+							this.indexArray[base + 1] = y;
+							this.indexArray[base + 2] = z;
+							this.indexArray[base + 3] = x + 1;
+							this.indexArray[base + 4] = y;
+							this.indexArray[base + 5] = z;
+							this.indexArray[base + 6] = x + 1;
+							this.indexArray[base + 7] = y;
+							this.indexArray[base + 8] = z + 1;
+							this.indexArray[base + 9] = x;
+							this.indexArray[base + 10] = y;
+							this.indexArray[base + 11] = z + 1;
 						}
-						else{ //finally x-y
-							indexArray[base] = x;
-							indexArray[base+1] = y;
-							indexArray[base+2] = z;
-							indexArray[base+3] = x+1;
-							indexArray[base+4] = y;
-							indexArray[base+5] = z;
-							indexArray[base+6] = x+1;
-							indexArray[base+7] = y+1;
-							indexArray[base+8] = z;
-							indexArray[base+9] = x;
-							indexArray[base+10] = y+1;
-							indexArray[base+11] = z;
+						else { // finally x-y
+							this.indexArray[base] = x;
+							this.indexArray[base + 1] = y;
+							this.indexArray[base + 2] = z;
+							this.indexArray[base + 3] = x + 1;
+							this.indexArray[base + 4] = y;
+							this.indexArray[base + 5] = z;
+							this.indexArray[base + 6] = x + 1;
+							this.indexArray[base + 7] = y + 1;
+							this.indexArray[base + 8] = z;
+							this.indexArray[base + 9] = x;
+							this.indexArray[base + 10] = y + 1;
+							this.indexArray[base + 11] = z;
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private void quicksort(int low, int high) {
+		int i = low, j = high;
+
+		int pivot = this.indexArray[low + (high - low) / 2];
+
+		while (i <= j) {
+			while (this.indexArray[i] < pivot) {
+				i++;
+			}
+
+			while (this.indexArray[j] > pivot) {
+				j--;
+			}
+
+			if (i <= j) {
+				exchange(i, j);
+				i++;
+				j--;
+			}
+		}
+
+		if (low < j)
+			quicksort(low, j);
+		if (i < high)
+			quicksort(i, high);
 	}
 
 	@Override
