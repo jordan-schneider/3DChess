@@ -173,19 +173,48 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				for(int y=0;y<=boardY;y++){
 					for(int x=0;z<=boardX;z++){
 						int base = 12 * (x + y * (1 + boardX) + z * (1 + boardX) * (1 + boardY) + dimension * (1 + boardX) * (1 + boardY) * (1 + boardZ));
-						indexArray[base] = 1;
-						indexArray[base+1] = 1;
-						indexArray[base+2] = 1;
-						indexArray[base+3] = 1;
-						indexArray[base+4] = 1;
-						indexArray[base+5] = 1;
-						indexArray[base+6] = 1;
-						indexArray[base+7] = 1;
-						indexArray[base+8] = 1;
-						indexArray[base+9] = 1;
-						indexArray[base+10] = 1;
-						indexArray[base+11] = 1;
-						indexArray[base+12] = 1;
+						if(base == 0){ //Do the sides in the y-z plane first
+							indexArray[base] = x;
+							indexArray[base+1] = y;
+							indexArray[base+2] = z;
+							indexArray[base+3] = x;
+							indexArray[base+4] = y;
+							indexArray[base+5] = z+1;
+							indexArray[base+6] = x;
+							indexArray[base+7] = y+1;
+							indexArray[base+8] = z+1;
+							indexArray[base+9] = x;
+							indexArray[base+10] = y+1;
+							indexArray[base+11] = z;
+						}
+						else if(base == 1){ //Then in the x-z
+							indexArray[base] = x;
+							indexArray[base+1] = y;
+							indexArray[base+2] = z;
+							indexArray[base+3] = x+1;
+							indexArray[base+4] = y;
+							indexArray[base+5] = z;
+							indexArray[base+6] = x+1;
+							indexArray[base+7] = y;
+							indexArray[base+8] = z+1;
+							indexArray[base+9] = x;
+							indexArray[base+10] = y;
+							indexArray[base+11] = z+1;
+						}
+						else{ //finally x-y
+							indexArray[base] = x;
+							indexArray[base+1] = y;
+							indexArray[base+2] = z;
+							indexArray[base+3] = x+1;
+							indexArray[base+4] = y;
+							indexArray[base+5] = z;
+							indexArray[base+6] = x+1;
+							indexArray[base+7] = y+1;
+							indexArray[base+8] = z;
+							indexArray[base+9] = x;
+							indexArray[base+10] = y+1;
+							indexArray[base+11] = z;
+						}
 					}
 				}
 			}
