@@ -89,26 +89,15 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				upZ); // Polar conversion + phi is from x-z plane instead of y axis
 
 		// TODO sort indexArray before making into buffer
-		this.indexBuffer = faceSort(cameraX, cameraY, cameraZ);
+		// this.indexBuffer = faceSort(cameraX, cameraY, cameraZ);
 
-		IntBuffer indexBuffer = IntBuffer.wrap(this.indexArray);
+		this.indexBuffer = BufferUtil.newIntBuffer(this.indexArray.length);
+		this.indexBuffer.put(this.indexArray);
+		this.indexBuffer.rewind();
 
 		gl.glEnableClientState(GL_VERTEX_ARRAY);
 		gl.glVertexPointer(3, GL_FLOAT, 0, this.vertexBuffer);
-
-		gl.glDrawElements(GL_QUADS, 1, GL_FLOAT, indexBuffer);
-
-		// This will be depricated as soon as I make Vertex Arrays work
-		for (int i = 0; i < this.boardZ; i++) {
-			for (int j = 0; j < this.boardY; j++) {
-				for (int k = 0; k < this.boardX; k++) {
-					this.glut.glutSolidCube(1f);
-					gl.glTranslatef(1f, 0f, 0f);
-				}
-				gl.glTranslatef(-1 * this.boardX, 1f, 0f);
-			}
-			gl.glTranslatef(0f, -1 * this.boardY, 1f);
-		}
+		gl.glDrawElements(GL_QUADS, 1, GL_FLOAT, this.indexBuffer);
 	}
 
 	@Override
@@ -127,7 +116,13 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			return null;
 		}
 		quicksort(0, this.indexArray.length - 1);
-		return BufferUtil.newIntBuffer(indexArray.length).put(indexArray);
+		return BufferUtil.newIntBuffer(this.indexArray.length).put(
+				this.indexArray);
+	}
+
+	private int index(int x, int y, int z) {
+		return x + y * (1 + this.boardX) + z * (1 + this.boardX)
+				* (1 + this.boardY);
 	}
 
 	@Override
@@ -164,17 +159,13 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.r = 2.0 * max(max(this.boardX, this.boardY), this.boardZ);
 
 		// Sets up vertex arrays
-		this.vertexArray = new float[ (1 + this.boardX)
-				* (1 + this.boardY) * (1 + this.boardZ)
-				* 3 // three dimension values per vertex
-		];
+		this.vertexArray = new float[3 * (1 + this.boardX) * (1 + this.boardY) * (1 + this.boardZ)];
 
 		// Hoping it wants the vertices in (x,y,z) format
 		for (int z = 0; z <= this.boardZ; z++) {
 			for (int y = 0; y <= this.boardY; y++) {
 				for (int x = 0; x <= this.boardX; x++) {
-					int base = 3 * (x + y * (1 + this.boardX) + z
-							* (1 + this.boardX) * (1 + this.boardY));
+					int base = 3 * index(x, y, z);
 					this.vertexArray[base] = x;
 					this.vertexArray[base + 1] = y;
 					this.vertexArray[base + 2] = z;
@@ -186,58 +177,55 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.vertexBuffer.put(this.vertexArray);
 		this.vertexBuffer.rewind();
 
-		this.indexArray = new int[12 * 3 * (1 + this.boardX)
-				* (1 + this.boardY) * (1 + this.boardZ)];
+		this.indexArray = new int[4 * 3 *
+				(this.boardX * this.boardY * this.boardZ +
+						this.boardX * this.boardY +
+						this.boardX * this.boardZ +
+				this.boardY * this.boardZ)];
+
+		int currentPoint = 0;
 		for (int dimension = 0; dimension < 3; dimension++) { // let dimension(0) = x, dimension(1) = y, ...
 			for (int z = 0; z <= this.boardZ; z++) {
 				for (int y = 0; y <= this.boardY; y++) {
-					for (int x = 0; z <= this.boardX; z++) {
-						int base = 12 * (x + y * (1 + this.boardX) + z
-								* (1 + this.boardX) * (1 + this.boardY) + dimension
-								* (1 + this.boardX)
-								* (1 + this.boardY)
-								* (1 + this.boardZ));
-						if (base == 0) { // Do the sides in the y-z plane first
-							this.indexArray[base] = x;
-							this.indexArray[base + 1] = y;
-							this.indexArray[base + 2] = z;
-							this.indexArray[base + 3] = x;
-							this.indexArray[base + 4] = y;
-							this.indexArray[base + 5] = z + 1;
-							this.indexArray[base + 6] = x;
-							this.indexArray[base + 7] = y + 1;
-							this.indexArray[base + 8] = z + 1;
-							this.indexArray[base + 9] = x;
-							this.indexArray[base + 10] = y + 1;
-							this.indexArray[base + 11] = z;
+					for (int x = 0; x <= this.boardX; x++) {
+						if (dimension == 0) { // Do the sides in the y-z plane first
+							if (z != this.boardZ && y != this.boardY) {
+								this.indexArray[currentPoint] = index(x, y, z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x, y + 1, z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x, y + 1, z + 1);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x, y, z + 1);
+								currentPoint++;
+							}
 						}
-						else if (base == 1) { // Then in the x-z
-							this.indexArray[base] = x;
-							this.indexArray[base + 1] = y;
-							this.indexArray[base + 2] = z;
-							this.indexArray[base + 3] = x + 1;
-							this.indexArray[base + 4] = y;
-							this.indexArray[base + 5] = z;
-							this.indexArray[base + 6] = x + 1;
-							this.indexArray[base + 7] = y;
-							this.indexArray[base + 8] = z + 1;
-							this.indexArray[base + 9] = x;
-							this.indexArray[base + 10] = y;
-							this.indexArray[base + 11] = z + 1;
+						else if (dimension == 1) { // Then in the x-z
+							if (z != this.boardZ && x != this.boardX) {
+								this.indexArray[currentPoint] = index(x, y, z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x + 1, y, z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x + 1, y, z + 1);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x, y, z + 1);
+								currentPoint++;
+							}
 						}
 						else { // finally x-y
-							this.indexArray[base] = x;
-							this.indexArray[base + 1] = y;
-							this.indexArray[base + 2] = z;
-							this.indexArray[base + 3] = x + 1;
-							this.indexArray[base + 4] = y;
-							this.indexArray[base + 5] = z;
-							this.indexArray[base + 6] = x + 1;
-							this.indexArray[base + 7] = y + 1;
-							this.indexArray[base + 8] = z;
-							this.indexArray[base + 9] = x;
-							this.indexArray[base + 10] = y + 1;
-							this.indexArray[base + 11] = z;
+							if (x != this.boardX && y != this.boardY) {
+								this.indexArray[currentPoint] = index(x, y, z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x, y + 1,
+										z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x + 1,
+										y + 1, z);
+								currentPoint++;
+								this.indexArray[currentPoint] = index(x + 1, y,
+										z);
+								currentPoint++;
+							}
 						}
 					}
 				}
@@ -287,8 +275,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		// Setup perspective projection, with aspect ratio matches viewport
 		gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
 		gl.glLoadIdentity(); // reset projection matrix
-		this.glu.gluPerspective(45.0, aspect, 0.1, 100.0); // fovy, aspect,
-		// zNear, zFar
+		this.glu.gluPerspective(45.0, aspect, 0.1, 100.0); // fovy, aspect, zNear, zFar
 
 		// Enable the model-view transform
 		gl.glMatrixMode(GL_MODELVIEW);
