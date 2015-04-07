@@ -50,6 +50,13 @@ public class TwoDPanel extends JPanel {
 		for(Piece p:gui.g.board.getPieces())
 			gpieces.add(new TwoDPiece(p));
 	}
+	public void reloadBoard(){
+		System.out.println("reloaded");
+		gpieces.clear();
+		for(Piece p:gui.g.board.getPieces())
+			gpieces.add(new TwoDPiece(p));
+		repaint();
+	}
 	@Override
 	public Dimension getPreferredSize() {
 		return new Dimension(1120,280);

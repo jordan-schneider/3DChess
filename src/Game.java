@@ -34,8 +34,8 @@ public class Game extends Thread{
 		started = false;
 		changed = false;
 		this.tc=tc;
-		timeLeft[0]=tc.sTime[0]*1000;
-		timeLeft[1]=tc.sTime[1]*1000;
+		timeLeft[0]=tc.sTime[0]*60000;
+		timeLeft[1]=tc.sTime[1]*60000;
 		p1.init(this, p1id);
 		p2.init(this, p2id);
 		ids=new long[]{p1id,p2id};
@@ -45,8 +45,9 @@ public class Game extends Thread{
 	public synchronized void reset(){
 		kill = true;
 		board.reset();
-		timeLeft[0]=tc.sTime[0]*1000;
-		timeLeft[1]=tc.sTime[1]*1000;
+		ui.reloadBoard();
+		timeLeft[0]=tc.sTime[0]*60000;
+		timeLeft[1]=tc.sTime[1]*60000;
 		cPlayer = 0;
 		movesIn=0;
 		timeOfLastAction=-1;
@@ -156,7 +157,7 @@ public class Game extends Thread{
 	 * 
 	 */
 	public boolean makeMove(int[] pieceSpot, int[] moveSpot, long cid){
-		if(pieceSpot==null||pieceSpot.length!=3||moveSpot==null||moveSpot.length!=3)
+		if(pausedAt!=-1||pieceSpot==null||pieceSpot.length!=3||moveSpot==null||moveSpot.length!=3)
 			return false;
 		if(cid!=ids[cPlayer])
 			return false;
@@ -173,6 +174,7 @@ public class Game extends Thread{
 		board.getAt(moveSpot).move(moveSpot);
 		board.setAt(null,pieceSpot);
 		cPlayer=(cPlayer+1)%2;
+		players[cPlayer].informMove(pieceSpot, moveSpot);
 		playerChanged();
 		return true;
 	}
