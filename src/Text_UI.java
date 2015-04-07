@@ -42,6 +42,11 @@ public class Text_UI implements UI{
 		}else
 			opps[g.cPlayer].makeMove();
 	}
+	@Override
+	public void reloadBoard() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
 

@@ -16,4 +16,6 @@ public interface UI {
 	 * @param id
 	 */
 	public void getMove(long id);
+	public void reloadBoard();
+	public boolean informMove(int[] from,int[] to,long id);
 }

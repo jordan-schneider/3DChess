@@ -16,28 +16,37 @@ public class Pawn extends Piece {
 	@Override
 	ArrayList<int[]> getMoves() {
 		ArrayList<int[]> valid=new ArrayList<int[]>();
-		if(this.owner==RaumschachBoard.WHITE){
-			if(location[1]<board.getSize()[1])
-				if(board.getAt(new int[]{location[0],location[1]+1,location[2]})==null)
-					valid.add(new int[]{location[0],location[1]+1,location[2]});
-			if(location[2]<board.getSize()[2])
-				if(board.getAt(new int[]{location[0],location[1],location[2]+1})==null)
-					valid.add(new int[]{location[0],location[1],location[2]+1});
+		int x=this.location[0];
+		int y=this.location[1];
+		int z=this.location[2];
+		if(owner==RaumschachBoard.BLACK){
+			if(x-1>=0&&y-1>=0&&board.getAt(new int[]{x-1,y-1,z})!=null&&board.getAt(new int[]{x-1,y-1,z}).owner!=owner)
+				valid.add(new int[]{x-1,y-1,z});
+			if(x-1>=0&&z-1>=0&&board.getAt(new int[]{x-1,y,z-1})!=null&&board.getAt(new int[]{x-1,y,z-1}).owner!=owner)
+				valid.add(new int[]{x-1,y,z-1});
+			if(x+1<5&&y-1>=0&&board.getAt(new int[]{x+1,y-1,z})!=null&&board.getAt(new int[]{x+1,y-1,z}).owner!=owner)
+				valid.add(new int[]{x+1,y-1,z});
+			if(x+1<5&&z-1>=0&&board.getAt(new int[]{x+1,y,z-1})!=null&&board.getAt(new int[]{x+1,y,z-1}).owner!=owner)
+				valid.add(new int[]{x+1,y,z-1});
+			if(y-1>0&&board.getAt(new int[]{x,y-1,z})==null)
+				valid.add(new int[]{x,y-1,z});
+			if(z-1>0&&board.getAt(new int[]{x,y,z-1})==null)
+				valid.add(new int[]{x,y,z-1});
 		}else{
-			if(location[1]>=0)
-				if(board.getAt(new int[]{location[0],location[1]-1,location[2]})==null)
-					valid.add(new int[]{location[0],location[1]-1,location[2]});
-			if(location[2]>=0)
-				if(board.getAt(new int[]{location[0],location[1],location[2]-1})==null)
-					valid.add(new int[]{location[0],location[1],location[2]-1});
-		}
-		for(int[] i:((this.owner==RaumschachBoard.WHITE)?wcaptures:bcaptures)){
-			int[] loc={this.location[0]+i[0],this.location[1]+i[1],this.location[2]+i[2]};
-			if(loc[0]>=0&&loc[1]>=0&&loc[2]>=0&&loc[0]<=board.getSize()[0]&&loc[1]<=board.getSize()[1]&&loc[2]<=board.getSize()[2])
-				if(board.getAt(loc)!=null&&board.getAt(loc).owner!=owner)
-					valid.add(loc);
+			if(x-1>=0&&y+1<5&&board.getAt(new int[]{x-1,y+1,z})!=null&&board.getAt(new int[]{x-1,y+1,z}).owner!=owner)
+				valid.add(new int[]{x-1,y+1,z});
+			if(x-1>=0&&z+1<5&&board.getAt(new int[]{x-1,y,z+1})!=null&&board.getAt(new int[]{x-1,y,z+1}).owner!=owner)
+				valid.add(new int[]{x-1,y,z+1});
+			if(x+1<5&&y+1<5&&board.getAt(new int[]{x+1,y+1,z})!=null&&board.getAt(new int[]{x+1,y+1,z}).owner!=owner)
+				valid.add(new int[]{x+1,y+1,z});
+			if(x+1<5&&z+1<5&&board.getAt(new int[]{x+1,y,z+1})!=null&&board.getAt(new int[]{x+1,y,z+1}).owner!=owner)
+				valid.add(new int[]{x+1,y,z+1});
+			if(y+1<5&&board.getAt(new int[]{x,y+1,z})==null)
+				valid.add(new int[]{x,y+1,z});
+			if(z+1<5&&board.getAt(new int[]{x,y,z+1})==null)
+				valid.add(new int[]{x,y,z+1});
+			return valid;
 		}
 		return valid;
 	}
-
 }
