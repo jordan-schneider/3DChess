@@ -62,4 +62,16 @@ public class Local_GUI_3D extends JFrame implements UI{
 		// BULLSHIT LEGACY CODE
 	}
 
+	@Override
+	public void reloadBoard() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean informMove(int[] from, int[] to, long id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
