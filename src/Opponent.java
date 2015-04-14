@@ -5,7 +5,7 @@ import java.util.ArrayList;
  * @author Matthew
  *
  */
-public abstract class Opponent {
+public class Opponent {
 	protected Game game;
 	ArrayList<Piece> pieces=new ArrayList<Piece>();
 	protected final long id;	//id assigned to player for security
@@ -33,13 +33,13 @@ public abstract class Opponent {
 	/**
 	 * Function called by {@code Game} to inform the {@code Opponent} that it is its turn.
 	 */
-	abstract void requestMove();
+	void requestMove(){}
 	/**
 	 * Function called by {@code Game} to inform the {@code Opponent} of a move that was made.
 	 * @param from - source location on the {@code Board}
 	 * @param to - destination location on the {@code Board}
 	 */
-	abstract void informMove(int[] from,int[] to);
+	void informMove(int[] from,int[] to){}
 	/**
 	 * @param piece - to add to {@code pieces} ArrayList.
 	 */
@@ -49,17 +49,19 @@ public abstract class Opponent {
 	/**
 	 * @return {@code true} if the {@code Opponent} is human controlled.
 	 */
-	public abstract boolean isHuman();
+	public boolean isHuman(){return false;};
 	/**
 	 * Function is mostly reserved for non-human players.  This function can be called by {@code UI} managers to ask the player to make a move.
 	 * @return {@code true} if the move is successful.
 	 */
-	public abstract boolean makeMove();
+	public boolean makeMove(){return true;}
 	/**
 	 * Function is mostly reserved for human players.  This function can be called by {@code UI} managers to ask the player to make a move from {@code from} to {@code to}.
 	 * @return {@code true} if the move is successful.
 	 * @param from - source location
 	 * @param to - destination location
 	 */
-	public abstract boolean makeMove(int[] from,int[] to);
+	public boolean makeMove(int[] from,int[] to){
+		return true;
+	}
 }

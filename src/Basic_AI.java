@@ -10,7 +10,7 @@ public class Basic_AI extends Opponent {
 		super(id);
 		this.player=0;
 		this.act_player=player;
-		board=new RaumschachBoard(new Null_Opp(0l), new Null_Opp(1l));
+		board=new RaumschachBoard(new Opponent(0l), new Opponent(1l));
 		for(int i=0;i<5;i++)
 			for(int j=0;j<2;j++){
 				b[i][1][j]='P';
@@ -381,7 +381,7 @@ public class Basic_AI extends Opponent {
 
 		if(player!=1)
 			material*=-1;
-		System.out.println("material "+material+","+alpha+","+beta);
+		//System.out.println("material "+material+","+alpha+","+beta);
 		return material;
 	}
 	public float qui(float alpha,float beta){
@@ -422,16 +422,16 @@ public class Basic_AI extends Opponent {
 				for(int k=0;k<5;k++){
 					if(b[i][j][k]>='a'&&player==1||b[i][j][k]<'a'&&player==0)
 					for(int[] d:genMove(i,j,k)){
-						System.out.println(RaumschachBoard.moveToString(new int[]{i,j,k})+" "+RaumschachBoard.moveToString(d)+" "+d[0]+","+d[1]+","+d[2]);
+					//	System.out.println(RaumschachBoard.moveToString(new int[]{i,j,k})+" "+RaumschachBoard.moveToString(d)+" "+d[0]+","+d[1]+","+d[2]);
 						byte t1=b[i][j][k];
 						byte t2=b[d[0]][d[1]][d[2]];
 						b[i][j][k]=0;
 						b[d[0]][d[1]][d[2]]=t1;
 						player=1-player;
 						float v=-search(-beta,-alpha,iterl-1,maxim);
-						System.out.println("Has value "+v+","+best);
+						//System.out.println("Has value "+v+","+best);
 						if(v>best){
-							System.out.println("best?");
+						//	System.out.println("best?");
 							if(max_iterl==iterl){
 								variation=new Principle(new int[]{i,j,k},d,v,Principle.EXACT);
 								System.out.println("updated variation");
@@ -465,7 +465,7 @@ public class Basic_AI extends Opponent {
 							}
 
 			}*/
-				max_iterl=1;
+				max_iterl=4;
 				System.out.println("In Action!!!!!!!!!!!!!");
 				float f=Basic_AI.this.search(-1000000, 1000000, max_iterl, act_player);
 				System.out.println(f+" OUT OF ACTION!?");
