@@ -43,19 +43,16 @@ public class Toy_GUI_3D extends JFrame implements UI {
 
 	@Override
 	public void getMove(long id) {
-		// TODO Auto-generated method stub
 		//LOLOLOLOLOLOL
 	}
 
 	@Override
 	public void reloadBoard() {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public boolean informMove(int[] from, int[] to, long id) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

@@ -517,7 +517,6 @@ public class Basic_AI extends Opponent {
 
 	@Override
 	public boolean makeMove(int[] from, int[] to) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
