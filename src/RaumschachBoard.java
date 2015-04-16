@@ -211,7 +211,7 @@ public class RaumschachBoard extends Board {
 		black.add(unicorn);
 		add(unicorn);
 
-		//TODO finish white later
+		
 		king = new Raum_King(2,0,0,WHITE,this);
 		white.add(king);
 		add(king);

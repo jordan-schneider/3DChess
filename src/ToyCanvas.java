@@ -1,14 +1,11 @@
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.util.gl2.GLUT;
 import com.sun.prism.impl.BufferUtil;
 
 import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
@@ -48,13 +45,9 @@ public class ToyCanvas extends GLCanvas implements GLEventListener{
 		
 		gl.glVertexPointer(3, GL_FLOAT, 0, vertexBuffer);
 		
-		//gl.glDrawArrays(GL_QUADS, 0, vertexBuffer.capacity());
 		gl.glDrawElements(GL_QUADS, indexBuffer.capacity(), GL_UNSIGNED_INT, indexBuffer);
 		
 		gl.glDisableClientState(GL_VERTEX_ARRAY);
-		
-		GLUT glut = new GLUT();
-		//glut.glutSolidTeapot(1);
 	}
 
 	@Override

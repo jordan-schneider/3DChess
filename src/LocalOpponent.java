@@ -6,7 +6,6 @@ public class LocalOpponent extends Opponent {
 	
 	
 	public void requestMove(){
-		// TODO hook this up to UI pipe
 		game.ui.getMove(id);
 	}
 	public boolean isHuman(){
