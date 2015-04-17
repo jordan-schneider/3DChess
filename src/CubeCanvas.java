@@ -62,7 +62,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	private Point3D pointOf(int index) {
-		return new Point3D(vertexArray[index], vertexArray[index + 1], vertexArray[index + 2]);
+		return new Point3D(vertexArray[index*3], vertexArray[index*3 + 1], vertexArray[index*3 + 2]);
 	}
 
 	@Override
@@ -248,21 +248,21 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	private void quicksort(int low, int high) {
 		int i = low, j = high;
 
-		System.out.println("High is " + high + " and low is " + low);
+		//System.out.println("High is " + high + " and low is " + low);
 		
-		double pivot = eval(low + (high - low) / 2);
+		double pivot = eval(((low + (high - low) / 2)/4)*4);
 
 		while (i <= j) {
-			System.out.println("i is " + i + " and j is " + j);
-			while (eval(i) < pivot) {
+			//System.out.println("i is " + i + " and j is " + j);
+			while (eval(i) > pivot) {
 				i += 4;
 			}
 
-			while (eval(j) > pivot) {
+			while (eval(j) < pivot) {
 				j -= 4;
 			}
 
-			if (eval(i) <= eval(j)) {
+			if (i <= j) {
 				exchange(i, j);
 				i += 4;
 				j -= 4;
