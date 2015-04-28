@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 
-
 public abstract class Piece {
 	int[] location;
 	int owner;
 	Board board;
 	public final char cCode;
+	int photoID;
 	
 	public Piece(int x, int y, int z, int owner, Board board,char cCode){
 		location = new int[3];

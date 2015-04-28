@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-
 public class TwoDPiece {
 	public Image img;
 	public int x,y;
