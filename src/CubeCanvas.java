@@ -22,6 +22,9 @@ import static java.lang.Math.sin;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
@@ -31,8 +34,12 @@ import javafx.geometry.Point3D;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
 import com.sun.prism.impl.BufferUtil;
 
 /**
@@ -49,12 +56,14 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	float[]						vertexArray;
 	FloatBuffer					vertexBuffer;
-	int[]						boardIndexArray, pieceIndexArray, totalIndexArray;
-	IntBuffer					indexBuffer;
+	int[]						boardIndexArray, pieceIndexArray;
+	IntBuffer					boardIndexBuffer, pieceIndexBuffer;
 
 	int							boardX, boardY, boardZ;
 
 	private double				cameraX, cameraY, cameraZ;
+	
+	Texture[] textures;
 
 	/**
 	 * Creates a Canvas to render a given board
@@ -81,6 +90,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
 		gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smoothes out lighting
 
+		//Defines mouse movement for rotations
+		//TODO add clicking logic
 		addMouseMotionListener(new MouseMotionListener() {
 
 			int	mouseX, mouseY;
@@ -103,6 +114,25 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.r = 2.0 * max(max(this.boardX, this.boardY), this.boardZ); // radius of camera
 
 		setUpArrays();
+		
+		try{
+			textures[0] = TextureIO.newTexture(new File("Black Bishop.png"), false);
+			textures[1] = TextureIO.newTexture(new File("Black King.png"), false);
+			textures[2] = TextureIO.newTexture(new File("Black Knight.png"), false);
+			textures[3] = TextureIO.newTexture(new File("Black Pawn.png"), false);
+			textures[4] = TextureIO.newTexture(new File("Black Queen.png"), false);
+			textures[5] = TextureIO.newTexture(new File("Black Rook.png"), false);
+			textures[6] = TextureIO.newTexture(new File("Black Unicorn.png"), false);
+			textures[7] = TextureIO.newTexture(new File("White Bishop.png"), false);
+			textures[8] = TextureIO.newTexture(new File("White King.png"), false);
+			textures[9] = TextureIO.newTexture(new File("White Knight.png"), false);
+			textures[10] = TextureIO.newTexture(new File("White Pawn.png"), false);
+			textures[11] = TextureIO.newTexture(new File("White Queen.png"), false);
+			textures[12] = TextureIO.newTexture(new File("White Rook.png"), false);
+			textures[13] = TextureIO.newTexture(new File("White Unicorn.png"), false);
+		}
+		catch(IOException e){}
+
 
 	}
 
@@ -244,18 +274,32 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity(); // reset the model-view matrix
-
-		gl.glColor4d(1.0, 1.0, 1.0, 0.1); // use a transparent color
-
+		
 		orientCamera();
 
-		addPeiceIndicies();
-		
-		this.indexBuffer = faceSort();
-
+		//Starting actual rendering
 		gl.glEnableClientState(GL_VERTEX_ARRAY);
 		gl.glVertexPointer(3, GL_FLOAT, 0, this.vertexBuffer);
-		gl.glDrawElements(GL_QUADS, this.indexBuffer.capacity(), GL_UNSIGNED_INT, this.indexBuffer);
+		
+		//Rendering opaque pieces
+		addPeiceIndicies();
+		//TODO Add texture code here
+		gl.glColor4d(1.0, 1.0, 1.0, 1.0);
+		
+		pieceIndexBuffer = BufferUtil.newIntBuffer(pieceIndexArray.length);
+		pieceIndexBuffer.put(pieceIndexArray);
+		pieceIndexBuffer.rewind();
+		
+		gl.glDrawElements(GL_QUADS, this.pieceIndexBuffer.capacity(), GL_UNSIGNED_INT, this.pieceIndexBuffer);
+		
+		//Rendering transparent board
+		gl.glColor4d(1.0, 1.0, 1.0, 0.1);
+		
+		this.boardIndexBuffer = faceSort();
+		
+		gl.glDrawElements(GL_QUADS, this.boardIndexBuffer.capacity(), GL_UNSIGNED_INT, this.boardIndexBuffer);
+		
+		//Clean up
 		gl.glDisableClientState(GL_VERTEX_ARRAY);
 	}
 
@@ -300,10 +344,9 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	private void orientCamera() {
-		// the vertex array cube is centered at the origin so I have to shift back 1/2 the length of the cube
-		double x_0 = (this.boardX / 2.0) - .5;
-		double y_0 = (this.boardY / 2.0) - .5;
-		double z_0 = (this.boardZ / 2.0) - .5;
+		double x_0 = (this.boardX / 2.0);
+		double y_0 = (this.boardY / 2.0);
+		double z_0 = (this.boardZ / 2.0);
 
 		this.cameraX = (this.r * cos(this.phi) * sin(this.theta)) + x_0;
 		this.cameraY = (this.r * sin(this.phi)) + y_0;
@@ -321,10 +364,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			return null;
 		}
 		
-		totalIndexArray = concat(boardIndexArray,pieceIndexArray);
+		boardIndexArray = concat(boardIndexArray,pieceIndexArray);
 		
-		quicksort(0, this.totalIndexArray.length - 1 - 3); // want the end index to be at the start of the face
-		return (IntBuffer) BufferUtil.newIntBuffer(this.totalIndexArray.length).put(this.totalIndexArray)
+		quicksort(0, this.boardIndexArray.length - 1 - 3); // want the end index to be at the start of the face
+		return (IntBuffer) BufferUtil.newIntBuffer(this.boardIndexArray.length).put(this.boardIndexArray)
 				.rewind();
 	}
 	
@@ -367,22 +410,22 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	private double eval(int index) {
-		Point3D p_1 = pointAt(this.totalIndexArray[index]), p_2 = pointAt(this.totalIndexArray[index + 1]), p_3 = pointAt(this.totalIndexArray[index + 2]), p_4 = pointAt(this.totalIndexArray[index + 3]);
+		Point3D p_1 = pointAt(this.boardIndexArray[index]), p_2 = pointAt(this.boardIndexArray[index + 1]), p_3 = pointAt(this.boardIndexArray[index + 2]), p_4 = pointAt(this.boardIndexArray[index + 3]);
 		Point3D pMid = getMidpointOfSquare(p_1, p_2, p_3, p_4);
 		return pMid.distance(this.cameraX, this.cameraY, this.cameraZ);
 	}
 
 	private void exchange(int i, int j) {
-		int temp_1 = this.totalIndexArray[i], temp_2 = this.totalIndexArray[i + 1], temp_3 = this.totalIndexArray[i + 2], temp_4 = this.totalIndexArray[i + 3];
-		this.totalIndexArray[i] = this.totalIndexArray[j];
-		this.totalIndexArray[i + 1] = this.totalIndexArray[j + 1];
-		this.totalIndexArray[i + 2] = this.totalIndexArray[j + 2];
-		this.totalIndexArray[i + 3] = this.totalIndexArray[j + 3];
+		int temp_1 = this.boardIndexArray[i], temp_2 = this.boardIndexArray[i + 1], temp_3 = this.boardIndexArray[i + 2], temp_4 = this.boardIndexArray[i + 3];
+		this.boardIndexArray[i] = this.boardIndexArray[j];
+		this.boardIndexArray[i + 1] = this.boardIndexArray[j + 1];
+		this.boardIndexArray[i + 2] = this.boardIndexArray[j + 2];
+		this.boardIndexArray[i + 3] = this.boardIndexArray[j + 3];
 
-		this.totalIndexArray[j] = temp_1;
-		this.totalIndexArray[j + 1] = temp_2;
-		this.totalIndexArray[j + 2] = temp_3;
-		this.totalIndexArray[j + 3] = temp_4;
+		this.boardIndexArray[j] = temp_1;
+		this.boardIndexArray[j + 1] = temp_2;
+		this.boardIndexArray[j + 2] = temp_3;
+		this.boardIndexArray[j + 3] = temp_4;
 	}
 
 	private Point3D getMidpointOfSquare(Point3D p_1, Point3D p_2, Point3D p_3, Point3D p_4) {
