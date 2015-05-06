@@ -19,6 +19,7 @@ public class Local_GUI_3D extends JFrame implements UI{
 		setBackground(Color.WHITE);
 
 		GLCanvas cube = new CubeCanvas(g.board);
+		//GLCanvas cube = new ToyCanvas();
 		FPSAnimator animator = new FPSAnimator(cube, 60,true);
 		
 		JPanel data = new DataPanel();
