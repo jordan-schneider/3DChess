@@ -14,6 +14,7 @@ import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 import static com.jogamp.opengl.fixedfunc.GLPointerFunc.GL_VERTEX_ARRAY;
+import static com.jogamp.opengl.GL2.*;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;
@@ -50,10 +51,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	private double				theta				= 0, phi = 0, r;	// theta is the angle in the x-z plane. phi is the angle from the x-z plane to the vector
 	private GLU					glu;
 
-	float[]						boardVertexArray, pieceVertexArray, textureCoordArray;
-	FloatBuffer					boardVertexBuffer, pieceVertexBuffer, textureCoordBuffer;
-	int[]						boardIndexArray, pieceIndexArray;
-	IntBuffer					boardIndexBuffer, pieceIndexBuffer;
+	float[]						boardVertexArray, pieceVertexArray, textureCoordArray;//, normalArray;
+	FloatBuffer					boardVertexBuffer, pieceVertexBuffer, textureCoordBuffer;//, normalBuffer;
+	int[]						boardIndexArray;
+	IntBuffer					boardIndexBuffer;
 
 	int							boardX, boardY, boardZ;
 
@@ -62,7 +63,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	Texture						texture;
 
 	private static final int	BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
-	private static final int	BLACK				= 0, WHITE = 600;	// Y not racism
+	private static final int	BLACK				= 0, WHITE = 600;
 
 	/**
 	 * Creates a Canvas to render a given board
@@ -116,7 +117,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		setUpIndexArrays();
 
-		textureCoordArray = new float[this.board.getPieces().size() * 6 * 4 * 2];
+		//normalArray = new float[this.board.getPieces().size() * 6 * 4 * 3];
 
 		try {
 			texture = TextureIO.newTexture(new File("TextureAtlas.png"), false);
@@ -131,9 +132,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	private void setUpVertexArray() {
 		// Sets up vertex arrays
 		int numBoardVertices = 3 * (1 + this.boardX) * (1 + this.boardY) * (1 + this.boardZ);
-		int numPieceVertices = 3 * 8 * this.boardX * this.boardY * this.boardZ;
 		this.boardVertexArray = new float[numBoardVertices];
-		pieceVertexArray = new float[numPieceVertices];
 
 		// filling in the vertices of the board
 		for (int z = 0; z <= this.boardZ; z++) {
@@ -147,68 +146,19 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			}
 		}
 
-		// filling in all the potential spots where pieces can live
-		for (int z = 0; z < this.boardZ; z++) {
-			for (int y = 0; y < this.boardY; y++) {
-				for (int x = 0; x < this.boardX; x++) {
-					int base = 3 * indexOfPieceSlot(x, y, z);
-
-					// Point order increases like binary with x as most significant digit
-					this.pieceVertexArray[base] = x + .2f;
-					this.pieceVertexArray[base + 1] = y + .2f;
-					this.pieceVertexArray[base + 2] = z + .2f;
-
-					this.pieceVertexArray[base + 3] = x + .2f;
-					this.pieceVertexArray[base + 4] = y + .2f;
-					this.pieceVertexArray[base + 5] = z + .8f;
-
-					this.pieceVertexArray[base + 6] = x + .2f;
-					this.pieceVertexArray[base + 7] = y + .8f;
-					this.pieceVertexArray[base + 8] = z + .2f;
-
-					this.pieceVertexArray[base + 9] = x + .2f;
-					this.pieceVertexArray[base + 10] = y + .8f;
-					this.pieceVertexArray[base + 11] = z + .8f;
-
-					this.pieceVertexArray[base + 12] = x + .8f;
-					this.pieceVertexArray[base + 13] = y + .2f;
-					this.pieceVertexArray[base + 14] = z + .2f;
-
-					this.pieceVertexArray[base + 15] = x + .8f;
-					this.pieceVertexArray[base + 16] = y + .2f;
-					this.pieceVertexArray[base + 17] = z + .8f;
-
-					this.pieceVertexArray[base + 18] = x + .8f;
-					this.pieceVertexArray[base + 19] = y + .8f;
-					this.pieceVertexArray[base + 20] = z + .2f;
-
-					this.pieceVertexArray[base + 21] = x + .8f;
-					this.pieceVertexArray[base + 22] = y + .8f;
-					this.pieceVertexArray[base + 23] = z + .8f;
-				}
-			}
-		}
-
 		// Wrapping vertexArray into the Buffer because C pointers
 		this.boardVertexBuffer = BufferUtil.newFloatBuffer(this.boardVertexArray.length);
 		this.boardVertexBuffer.put(this.boardVertexArray);
 		this.boardVertexBuffer.rewind();
-		
-		// Wrapping vertexArray into the Buffer because C pointers
-		this.pieceVertexBuffer = BufferUtil.newFloatBuffer(this.pieceVertexArray.length);
-		this.pieceVertexBuffer.put(this.pieceVertexArray);
-		this.pieceVertexBuffer.rewind();
 
-		// deliberately not touching the piece index until display because of initialization times data
+		//Don't touch pieces until we know which ones are left
 	}
 
 	private void setUpIndexArrays() {
 		// Filling the board index array for the first time
 		int numBoardWallIndicies = 4 * 3 * ((this.boardX * this.boardY * this.boardZ)
 				+ (this.boardX * this.boardY) + (this.boardX * this.boardZ) + (this.boardY * this.boardZ));
-		int maxNumPieceWallsIndicies = this.board.getPieces().size() * 6 * 4;
 		this.boardIndexArray = new int[numBoardWallIndicies];
-		this.pieceIndexArray = new int[maxNumPieceWallsIndicies];
 
 		int currentPoint = 0;
 		for (int dimension = 0; dimension < 3; dimension++) { // let dimension(0) = x, dimension(1) = y, ...
@@ -262,10 +212,6 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		return x + (y * (1 + this.boardX)) + (z * (1 + this.boardX) * (1 + this.boardY)); // consider it like a base n value converted to decimal
 	}
 
-	private int indexOfPieceSlot(int x, int y, int z) {
-		return (8 * (x + (y * this.boardX) + (z * this.boardX * this.boardY)));
-	}
-
 	private Point3D pointAt(int index) {
 		return new Point3D(this.boardVertexArray[index * 3], this.boardVertexArray[(index * 3) + 1],
 				this.boardVertexArray[(index * 3) + 2]); // 3 vertex values per index value
@@ -274,55 +220,55 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	@Override
 	public void display(GLAutoDrawable drawable) {		
 		GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
-		
-		//gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		//gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		
+
 		//Opening Clean Up
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity(); // reset the model-view matrix
 
+		//Point the camera towards the middle and do rotations
 		orientCamera();
-
-		// Loads in the vertex array generated in init() and setUpVertexArray()
-		gl.glEnableClientState(GL_VERTEX_ARRAY);
-		gl.glVertexPointer(3, GL_FLOAT, 0, this.pieceVertexBuffer);
 
 		// Setting up the vertex and texture array data for the current set of pieces on the board
 		addPieceData();
 
-		//Load in the texture coordinate array data
-		gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		// Loads in the vertex array for pieces
+		gl.glEnableClientState(GL_VERTEX_ARRAY);
+
+		pieceVertexBuffer = BufferUtil.newFloatBuffer(pieceVertexArray.length);
+		pieceVertexBuffer.put(pieceVertexArray);
+		pieceVertexBuffer.rewind();
+		gl.glVertexPointer(3, GL_FLOAT, 0, this.pieceVertexBuffer);
+
+		// Load in the texture coordinate array
+		//gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
 		textureCoordBuffer = BufferUtil.newFloatBuffer(textureCoordArray.length);
 		textureCoordBuffer.put(textureCoordArray);
 		textureCoordBuffer.rewind();
-		gl.glTexCoordPointer(2, GL_FLOAT, 0, textureCoordBuffer);
+		//gl.glTexCoordPointer(2, GL_FLOAT, 0, textureCoordBuffer);
 
-		//Load in the texture
+		// Load in the texture
 		texture.bind(gl);		
 
-		//Set the color to fully opaque
+		// Set the color to fully opaque
 		gl.glColor4d(1.0, 1.0, 1.0, 1.0);
 
-		//Set up the index array
-		this.pieceIndexBuffer = BufferUtil.newIntBuffer(this.pieceIndexArray.length);
-		this.pieceIndexBuffer.put(this.pieceIndexArray);
-		this.pieceIndexBuffer.rewind();
+		// Draw the pieces
+		gl.glDrawArrays(GL_QUADS, 0, pieceVertexArray.length/3);
 
-		//Do the actual drawing
-		gl.glDrawElements(GL_QUADS, this.pieceIndexBuffer.capacity(), GL_UNSIGNED_INT,
-				this.pieceIndexBuffer);
-
-		//Disable texture arrays as soon as possible, still need vertex array for 
-		gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		// Disable texture arrays as soon as possible, still need vertex array for board
+		//gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
 		// Rendering transparent board
 		gl.glColor4d(1.0, 1.0, 1.0, 0.1);
-		
+
+		// Need to sort from back to front because transparency
 		this.boardIndexBuffer = faceSort();
+
+		// Load the board's vertex data
 		gl.glVertexPointer(3, GL_FLOAT, 0, this.boardVertexBuffer);
 
+		// Draws the board
 		gl.glDrawElements(GL_QUADS, this.boardIndexBuffer.capacity(), GL_UNSIGNED_INT,
 				this.boardIndexBuffer);
 
@@ -331,11 +277,14 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	private void addPieceData() {
+		pieceVertexArray = new float[board.getPieces().size() * 4 * 6 * 3];
+		textureCoordArray = new float[board.getPieces().size() * 4 * 6 * 2];
+
 		int pieceRendered = 0;
 		for (Piece p : this.board.getPieces()) {
-			int baseIndexInTextureArray = pieceRendered * 6 * 4 * 2;
 
-			int piece;
+			//Figure out which texture to use
+			int piece;			
 			switch (p.cCode) {
 				case 'B':
 					piece = BISHOP;
@@ -360,58 +309,94 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 					break;
 				default:
 					piece = -1;
+					System.out.println("FAIL");
 			}
 
-			TextureCoords current = texture.getSubImageTexCoords(piece, p.owner + WHITE, piece + KING, p.owner); //king and white are the size of the increment			
-			
-			for(int i=0;i<24;i+=8){ //for each face
-				textureCoordArray[baseIndexInTextureArray + 0 + i] = current.left();
-				textureCoordArray[baseIndexInTextureArray + 1 + i] = current.bottom();
+			TextureCoords current = texture.getSubImageTexCoords(piece, p.owner, piece + KING, p.owner + WHITE); //king and white are the size of the increment			
 
-				textureCoordArray[baseIndexInTextureArray + 5 + i] = current.left();
-				textureCoordArray[baseIndexInTextureArray + 6 + i] = current.top();
-				
-				textureCoordArray[baseIndexInTextureArray + 2 + i] = current.right();
-				textureCoordArray[baseIndexInTextureArray + 3 + i] = current.top();
-			
-				textureCoordArray[baseIndexInTextureArray + 7 + i] = current.right();
-				textureCoordArray[baseIndexInTextureArray + 8 + i] = current.bottom();
+			int baseIndexInTextureArray = pieceRendered * 6 * 4 * 2;
+			int baseIndexInVertexArray = pieceRendered * 6 * 4 * 3;
+
+			for(int face=0;face<6;face++){ //for each face
+				int dimension = face/2;
+				float dimMod = face%2*0.6f;
+				switch(dimension){
+					case 0: //x
+						pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f;
+						textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.right();
+						textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
+
+						pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f;
+						textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.left();
+						textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
+
+						pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .8f;
+						textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.left();
+						textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
+
+						pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 11 + face*12] = p.location[2] + .8f;
+						textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.right();
+						textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
+					case 1: //y
+						pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f;
+						textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.left();
+						textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
+
+						pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f;
+						textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.right();
+						textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
+
+						pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .8f;
+						textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.right();
+						textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
+
+						pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .2f + dimMod;
+						pieceVertexArray[baseIndexInVertexArray + 11+ face*12] = p.location[2] + .8f;
+						textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.left();
+						textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
+						/*
+					case 2: //z
+						pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f + dimMod;
+						textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.left();
+						textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
+
+						pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f + dimMod;
+						textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.right();
+						textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
+
+						pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .2f + dimMod;
+						textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.right();
+						textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
+
+						pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + .2f;
+						pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .8f;
+						pieceVertexArray[baseIndexInVertexArray + 11 + face*12] = p.location[2] + .2f + dimMod;
+						textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.left();
+						textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
+						 */
+				}
 			}
-
-			int baseIndexInIndexArray = pieceRendered * 6 * 4;
-			int baseIndexInVertexArray = indexOfPieceSlot(p.location[0], p.location[1],
-					p.location[2]);
-
-			this.pieceIndexArray[baseIndexInIndexArray + 0] = baseIndexInVertexArray + 0; // low x-y face
-			this.pieceIndexArray[baseIndexInIndexArray + 1] = baseIndexInVertexArray + 2;
-			this.pieceIndexArray[baseIndexInIndexArray + 2] = baseIndexInVertexArray + 6;
-			this.pieceIndexArray[baseIndexInIndexArray + 3] = baseIndexInVertexArray + 4;
-
-			this.pieceIndexArray[baseIndexInIndexArray + 4] = baseIndexInVertexArray + 0; // low x-z face
-			this.pieceIndexArray[baseIndexInIndexArray + 5] = baseIndexInVertexArray + 1;
-			this.pieceIndexArray[baseIndexInIndexArray + 6] = baseIndexInVertexArray + 5;
-			this.pieceIndexArray[baseIndexInIndexArray + 7] = baseIndexInVertexArray + 4;
-
-			this.pieceIndexArray[baseIndexInIndexArray + 8] = baseIndexInVertexArray + 0; // low y-z face
-			this.pieceIndexArray[baseIndexInIndexArray + 9] = baseIndexInVertexArray + 1;
-			this.pieceIndexArray[baseIndexInIndexArray + 10] = baseIndexInVertexArray + 3;
-			this.pieceIndexArray[baseIndexInIndexArray + 11] = baseIndexInVertexArray + 2;
-
-			this.pieceIndexArray[baseIndexInIndexArray + 12] = baseIndexInVertexArray + 7; // high x-y face
-			this.pieceIndexArray[baseIndexInIndexArray + 13] = baseIndexInVertexArray + 5;
-			this.pieceIndexArray[baseIndexInIndexArray + 14] = baseIndexInVertexArray + 1;
-			this.pieceIndexArray[baseIndexInIndexArray + 15] = baseIndexInVertexArray + 3;
-
-			this.pieceIndexArray[baseIndexInIndexArray + 16] = baseIndexInVertexArray + 7; // high x-z face
-			this.pieceIndexArray[baseIndexInIndexArray + 17] = baseIndexInVertexArray + 6;
-			this.pieceIndexArray[baseIndexInIndexArray + 18] = baseIndexInVertexArray + 2;
-			this.pieceIndexArray[baseIndexInIndexArray + 19] = baseIndexInVertexArray + 3;
-
-			this.pieceIndexArray[baseIndexInIndexArray + 20] = baseIndexInVertexArray + 7; // high y-z face
-			this.pieceIndexArray[baseIndexInIndexArray + 21] = baseIndexInVertexArray + 6;
-			this.pieceIndexArray[baseIndexInIndexArray + 22] = baseIndexInVertexArray + 4;
-			this.pieceIndexArray[baseIndexInIndexArray + 23] = baseIndexInVertexArray + 5;
-
 			pieceRendered++;
 		}
 	}
