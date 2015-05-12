@@ -22,18 +22,24 @@ import static java.lang.Math.min;
 import static java.lang.Math.sin;
 
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import javafx.geometry.Point3D;
+
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUquadric;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureCoords;
 import com.jogamp.opengl.util.texture.TextureIO;
@@ -44,7 +50,7 @@ import com.sun.prism.impl.BufferUtil;
  *
  * @author Jordan
  */
-public class CubeCanvas extends GLCanvas implements GLEventListener {
+public class CubeCanvas extends GLCanvas implements GLEventListener{
 
 	private static final long	serialVersionUID	= 1L;
 	private Board				board;
@@ -78,7 +84,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.boardY = board.getSize()[1];
 		this.boardZ = board.getSize()[2];
 	}
-
+	int x_click,y_click;
 	@Override
 	public void init(GLAutoDrawable drawable) {
 		GL2 gl = drawable.getGL().getGL2(); // get the OpenGL graphics context
@@ -108,6 +114,38 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			public void mouseMoved(MouseEvent e) {
 				this.mouseX = e.getX();
 				this.mouseY = e.getY();
+			}
+		});
+		addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				CubeCanvas.this.x_click=e.getX();
+				CubeCanvas.this.y_click=e.getY();
 			}
 		});
 
@@ -216,17 +254,33 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		return new Point3D(this.boardVertexArray[index * 3], this.boardVertexArray[(index * 3) + 1],
 				this.boardVertexArray[(index * 3) + 2]); // 3 vertex values per index value
 	}
-
+	Point3D point=null;
 	@Override
 	public void display(GLAutoDrawable drawable) {		
 		GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
-
 		//Opening Clean Up
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity(); // reset the model-view matrix
 
 		//Point the camera towards the middle and do rotations
 		orientCamera();
+		/*	for(Point3D point:points){
+			for(int i=0;i<5;i++){
+				gl.glTranslated(point.getX()*0.1,point.getY()*0.1,point.getZ()*0.1);
+			gl.glColor3f(0.3f, 0.5f, 1f);
+	        GLUquadric earth = glu.gluNewQuadric();
+	        glu.gluQuadricDrawStyle(earth, GLU.GLU_FILL);
+	        glu.gluQuadricNormals(earth, GLU.GLU_FLAT);
+	        glu.gluQuadricOrientation(earth, GLU.GLU_OUTSIDE);
+	        final float radius = 0.001f;
+	        final int slices = 16;
+	        final int stacks = 16;
+	        glu.gluSphere(earth, radius, slices, stacks);
+	        glu.gluDeleteQuadric(earth);
+			}
+			for(int i=0;i<5;i++)
+	        gl.glTranslated(-point.getX()*0.1,-point.getY()*0.1,-point.getZ()*0.1);
+		}*/
 
 		// Setting up the vertex and texture array data for the current set of pieces on the board
 		addPieceData();
@@ -274,6 +328,68 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		// Clean up
 		gl.glDisableClientState(GL_VERTEX_ARRAY);
+		
+		if(x_click>=0){
+			int viewport[] = new int[4];
+			double modelview[] = new double[16];
+			double projection[] = new double[16];
+			float winX, winY, winZ;
+			float posX, posY, posZ;
+			double wcoord1[] = new double[4];
+			double wcoord2[] = new double[4];
+
+			gl.glGetDoublev( GL2.GL_MODELVIEW_MATRIX, modelview, 0 );
+			gl.glGetDoublev( GL2.GL_PROJECTION_MATRIX, projection, 0 );
+			gl.glGetIntegerv( GL2.GL_VIEWPORT, viewport, 0 );
+			winX = (float)x_click;
+			winY = (float)viewport[3] - (float)y_click;
+			boolean test = 	glu.gluUnProject( winX, winY, 0.0, modelview, 0, projection, 0, viewport, 0, wcoord1, 0);
+			test = 	test&&glu.gluUnProject( winX, winY, 1.0, modelview, 0, projection, 0, viewport, 0, wcoord2, 0);
+			System.out.println("pre: "+x_click+","+y_click);
+			System.out.println("x: " + (wcoord2[0]-wcoord1[0]) +"y: "+(wcoord2[1]-wcoord1[1])+"z: "+(wcoord2[2]-wcoord1[2])+" worked? "+test);
+			System.out.println(this.cameraX+","+this.cameraY+","+this.cameraZ);
+
+			//System.out.println("******"+Arrays.toString(modelview));
+			//System.out.println("******"+Arrays.toString(projection));
+			//System.out.println("******"+Arrays.toString(viewport));
+			x_click=-1;
+			point=(new Point3D(wcoord2[0]-wcoord1[0],wcoord2[1]-wcoord1[1], wcoord2[2]-wcoord1[2]));
+			int[] prevto=null;
+			for(double k=-1;k<1;k+=0.001){
+				
+				int[] to=toLoc(new double[]{this.cameraX+point.getX()*k,this.cameraY+point.getY()*k,this.cameraZ+point.getZ()*k});
+				//System.out.println(Arrays.toString(new double[]{this.cameraX+point.getX()*k,this.cameraY+point.getY()*k,this.cameraZ+point.getZ()*k}));
+				if(prevto==null);
+				else if(to==null)
+					continue;
+				else if(Arrays.equals(prevto, to))
+					continue;
+				prevto=to;
+				if(to!=null){
+					if(this.board.getAt(to)!=null){
+						System.out.println("Ray intersects "+this.board.getAt(to).cCode+" located in "+Arrays.toString(to));
+					}else{
+						System.out.println("Ray intersects nothing in "+Arrays.toString(to));
+
+					}
+					}
+			}
+		}
+	}
+	public static int[] toLoc(double[] coord){
+		int[] r=new int[3];
+		for(int i=0;i<3;i++){
+			coord[0]-=0.2;
+			if(Math.floor(coord[i]-0.1)>=0&&Math.floor(coord[i]-0.1)<5&&coord[i]-Math.floor(coord[i]-0.1)<0.8)
+				r[i]=(int)Math.floor(coord[i]-0.1);
+			else
+				return null;
+
+		}
+		int t=r[2];
+		r[2]=r[1];
+		r[1]=t;
+		return r;
 	}
 
 	private void addPieceData() {
@@ -286,30 +402,30 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			//Figure out which texture to use
 			int piece;			
 			switch (p.cCode) {
-				case 'B':
-					piece = BISHOP;
-					break;
-				case 'K':
-					piece = KING;
-					break;
-				case 'N':
-					piece = KNIGHT;
-					break;
-				case 'P':
-					piece = PAWN;
-					break;
-				case 'Q':
-					piece = QUEEN;
-					break;
-				case 'R':
-					piece = ROOK;
-					break;
-				case 'U':
-					piece = UNICORN;
-					break;
-				default:
-					piece = -1;
-					System.out.println("FAIL");
+			case 'B':
+				piece = BISHOP;
+				break;
+			case 'K':
+				piece = KING;
+				break;
+			case 'N':
+				piece = KNIGHT;
+				break;
+			case 'P':
+				piece = PAWN;
+				break;
+			case 'Q':
+				piece = QUEEN;
+				break;
+			case 'R':
+				piece = ROOK;
+				break;
+			case 'U':
+				piece = UNICORN;
+				break;
+			default:
+				piece = -1;
+				System.out.println("FAIL");
 			}
 
 			TextureCoords current = texture.getSubImageTexCoords(piece, p.owner, piece + KING, p.owner + WHITE); //king and white are the size of the increment			
@@ -321,55 +437,55 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				int dimension = face/2;
 				float dimMod = face%2*0.6f;
 				switch(dimension){
-					case 0: //x
-						pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f;
-						pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f;
-						textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.right();
-						textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
+				case 0: //x
+					pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f;
+					pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f;
+					textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.right();
+					textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
 
-						pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .8f;
-						pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f;
-						textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.left();
-						textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
+					pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .8f;
+					pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f;
+					textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.left();
+					textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
 
-						pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .8f;
-						pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .8f;
-						textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.left();
-						textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
+					pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .8f;
+					pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .8f;
+					textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.left();
+					textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
 
-						pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .2f;
-						pieceVertexArray[baseIndexInVertexArray + 11 + face*12] = p.location[2] + .8f;
-						textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.right();
-						textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
-					case 1: //y
-						pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f;
-						pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f;
-						textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.left();
-						textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
+					pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .2f;
+					pieceVertexArray[baseIndexInVertexArray + 11 + face*12] = p.location[2] + .8f;
+					textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.right();
+					textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
+				case 1: //y
+					pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f;
+					pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 2 + face*12] = p.location[2] + .2f;
+					textureCoordArray[baseIndexInTextureArray + 0 + face*8] = current.left();
+					textureCoordArray[baseIndexInTextureArray + 1 + face*8] = current.bottom();
 
-						pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .8f;
-						pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f;
-						textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.right();
-						textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
+					pieceVertexArray[baseIndexInVertexArray + 3 + face*12] = p.location[0] + .8f;
+					pieceVertexArray[baseIndexInVertexArray + 4 + face*12] = p.location[1] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 5 + face*12] = p.location[2] + .2f;
+					textureCoordArray[baseIndexInTextureArray + 2 + face*8] = current.right();
+					textureCoordArray[baseIndexInTextureArray + 3 + face*8] = current.bottom();
 
-						pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .8f;
-						pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .8f;
-						textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.right();
-						textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
+					pieceVertexArray[baseIndexInVertexArray + 6 + face*12] = p.location[0] + .8f;
+					pieceVertexArray[baseIndexInVertexArray + 7 + face*12] = p.location[1] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 8 + face*12] = p.location[2] + .8f;
+					textureCoordArray[baseIndexInTextureArray + 4 + face*8] = current.right();
+					textureCoordArray[baseIndexInTextureArray + 5 + face*8] = current.top();
 
-						pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + .2f;
-						pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .2f + dimMod;
-						pieceVertexArray[baseIndexInVertexArray + 11+ face*12] = p.location[2] + .8f;
-						textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.left();
-						textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
-						/*
+					pieceVertexArray[baseIndexInVertexArray + 9 + face*12] = p.location[0] + .2f;
+					pieceVertexArray[baseIndexInVertexArray + 10 + face*12] = p.location[1] + .2f + dimMod;
+					pieceVertexArray[baseIndexInVertexArray + 11+ face*12] = p.location[2] + .8f;
+					textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.left();
+					textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
+					/*
 					case 2: //z
 						pieceVertexArray[baseIndexInVertexArray + 0 + face*12] = p.location[0] + .2f;
 						pieceVertexArray[baseIndexInVertexArray + 1 + face*12] = p.location[1] + .2f;
@@ -394,13 +510,12 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 						pieceVertexArray[baseIndexInVertexArray + 11 + face*12] = p.location[2] + .2f + dimMod;
 						textureCoordArray[baseIndexInTextureArray + 6 + face*8] = current.left();
 						textureCoordArray[baseIndexInTextureArray + 7 + face*8] = current.top();
-						 */
+					 */
 				}
 			}
 			pieceRendered++;
 		}
 	}
-
 	private void orientCamera() {
 		double x_0 = (this.boardX / 2.0);
 		double y_0 = (this.boardY / 2.0);
@@ -524,4 +639,6 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glEnable(GL_BLEND);
 		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
+
+
 }
