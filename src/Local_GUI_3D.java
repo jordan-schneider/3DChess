@@ -13,12 +13,16 @@ import com.jogamp.opengl.util.FPSAnimator;
 
 @SuppressWarnings("serial")
 public class Local_GUI_3D extends JFrame implements UI{
-
+	public Game g;
+	public Opponent[] opps;
+	public long[] ids;
 	@Override
 	public void init(Opponent[] opps, long[] ids, Game g) {
 		setBackground(Color.WHITE);
-
-		GLCanvas cube = new CubeCanvas(g.board);
+		this.g=g;
+		this.opps=opps;
+		this.ids=ids;
+		GLCanvas cube = new CubeCanvas(g.board,this);
 		//GLCanvas cube = new ToyCanvas();
 		FPSAnimator animator = new FPSAnimator(cube, 60,true);
 		
