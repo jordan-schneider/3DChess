@@ -1,10 +1,20 @@
-import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL.GL_BLEND;
+import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
+import static com.jogamp.opengl.GL.GL_DEPTH_BUFFER_BIT;
+import static com.jogamp.opengl.GL.GL_DEPTH_TEST;
+import static com.jogamp.opengl.GL.GL_FLOAT;
+import static com.jogamp.opengl.GL.GL_LEQUAL;
+import static com.jogamp.opengl.GL.GL_NICEST;
+import static com.jogamp.opengl.GL.GL_ONE_MINUS_SRC_ALPHA;
+import static com.jogamp.opengl.GL.GL_SRC_ALPHA;
+import static com.jogamp.opengl.GL.GL_UNSIGNED_INT;
 import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
 import static com.jogamp.opengl.GL2GL3.GL_QUADS;
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_SMOOTH;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
-import static com.jogamp.opengl.fixedfunc.GLPointerFunc.*;
+import static com.jogamp.opengl.fixedfunc.GLPointerFunc.GL_COLOR_ARRAY;
+import static com.jogamp.opengl.fixedfunc.GLPointerFunc.GL_VERTEX_ARRAY;
 import static java.lang.Math.cos;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -43,30 +53,38 @@ import com.sun.prism.impl.BufferUtil;
 @SuppressWarnings("serial")
 public class CubeCanvas extends GLCanvas implements GLEventListener {
 
-	private GLU					glu;
-	
-	private Local_GUI_3D		lg3d;
-	private Board				board;
-	
-	int							boardX, boardY, boardZ;
-	
-	private double				theta				= 0, phi = 0, r;	// theta is the angle in the x-z plane. phi is the angle from the x-z plane to the vector
-	private double				cameraX, cameraY, cameraZ;
-	private int		x_click, y_click;
-	private Piece	clicked_on	= null;
-	private Point3D point;
-	
-	float[]						boardVertexArray, pieceVertexArray, textureCoordArray;
-	FloatBuffer					boardVertexBuffer, pieceVertexBuffer, textureCoordBuffer;
-	int[]						boardIndexArray, boardColorArray;
-	IntBuffer					boardIndexBuffer, boardColorBuffer;
-	
-	Texture						texture;
+	/**
+	 *
+	 */
+	private static final long		serialVersionUID	= 1L;
 
-	private static final int	BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
-	
+	private GLU						glu;
+
+	private Local_GUI_3D			lg3d;
+	private Board					board;
+
+	int								boardX, boardY, boardZ;
+
+	private double					theta				= 0, phi = 0, r;	// theta is the angle in the x-z plane. phi is the angle from the x-z plane to the vector
+	private double					cameraX, cameraY, cameraZ;
+	private int						x_click, y_click;
+	private Piece					clicked_on			= null;
+	private Point3D					point;
+
+	float[]							boardVertexArray, pieceVertexArray, textureCoordArray, boardColorArray;
+	FloatBuffer						boardVertexBuffer, pieceVertexBuffer, textureCoordBuffer, boardColorBuffer;
+	int[]							boardIndexArray;
+	IntBuffer						boardIndexBuffer;
+	int[][][]						cubeColors;
+
+	Texture							texture;
+
+	private static final int		BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
+	private static final float[][]	colorMap			= { { 1f, 1f, 1f }, { 1f, 0f, 0f }, { 0f, 0f, 1f }, { 1f, 1f, 0f } };
+
 	/**
 	 * Creates a Canvas to render a given board
+	 * 
 	 * @param board
 	 *            to render
 	 */
@@ -127,8 +145,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		setUpVertexArray();
 
 		setUpIndexArray();
-		
-		this.boardColorArray = new int[3 * (1 + this.boardX) * (1 + this.boardY) * (1 + this.boardZ)];
+
+		this.boardColorArray = new float[3 * (1 + this.boardX) * (1 + this.boardY) * (1 + this.boardZ)];
 
 		try {
 			this.texture = TextureIO.newTexture(new File("TextureAtlas.png"), false);
@@ -221,9 +239,13 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Converts from coordinates to indicies
-	 * @param x coordinate of vertex
-	 * @param y coordinate of vertex
-	 * @param z coordinate of vertex
+	 * 
+	 * @param x
+	 *            coordinate of vertex
+	 * @param y
+	 *            coordinate of vertex
+	 * @param z
+	 *            coordinate of vertex
 	 * @return the root index of that point in the boardVertexArray
 	 */
 	private int indexOfBoardWall(int x, int y, int z) {
@@ -232,7 +254,9 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Converts a boardVertexArray index to a Point3D
-	 * @param index in boardVertexArray
+	 * 
+	 * @param index
+	 *            in boardVertexArray
 	 * @return Point3D of the point represented
 	 */
 	private Point3D pointAt(int index) {
@@ -254,7 +278,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		// Setting up the vertex and texture array data for the current set of pieces on the board
 		addPieceData();
-		
+
 		setColoring();
 
 		// Loads in the vertex array for pieces
@@ -287,11 +311,11 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		// Set the color
 		gl.glEnableClientState(GLPointerFunc.GL_COLOR_ARRAY);
-		
-		boardColorBuffer = BufferUtil.newIntBuffer(boardColorArray.length);
-		boardColorBuffer.put(boardColorArray);
-		boardColorBuffer.rewind();
-		gl.glColorPointer(boardColorArray.length, GL_UNSIGNED_INT, 0, boardColorBuffer);
+
+		this.boardColorBuffer = BufferUtil.newFloatBuffer(this.boardColorArray.length);
+		this.boardColorBuffer.put(this.boardColorArray);
+		this.boardColorBuffer.rewind();
+		gl.glColorPointer(this.boardColorArray.length, GL_UNSIGNED_INT, 0, this.boardColorBuffer);
 
 		// Need to sort from back to front because transparency
 		this.boardIndexBuffer = faceSort();
@@ -344,7 +368,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				if (to != null) {
 					if (this.clicked_on == null) {
 						if (this.board.getAt(to) != null) {
-							////System.out.println("Selected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
+							// //System.out.println("Selected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 							this.clicked_on = this.board.getAt(to);
 							break;
 						} else {
@@ -355,26 +379,26 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 					} else {
 						if (this.board.getAt(to) != null) {
 							if (this.clicked_on == this.board.getAt(to)) {
-								////System.out.println("Unselected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
+								// //System.out.println("Unselected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 								this.clicked_on = null;
 							} else if (this.board.isValidMove(this.clicked_on, to)) {
 								// move 'clicked_on' to 'to'
-								//System.out.println("Took " + k + " Piece takes " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
+								// System.out.println("Took " + k + " Piece takes " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
 								this.clicked_on = null;
 							} else {
-								//System.out.println("Illegal hit " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
+								// System.out.println("Illegal hit " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 							}
 							// clicked_on=this.board.getAt(to);
 							break;
 						} else {
 							if (this.board.isValidMove(this.clicked_on, to)) {
-								//System.out.println("Move to " + k + " located " + Arrays.toString(to));
+								// System.out.println("Move to " + k + " located " + Arrays.toString(to));
 								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
 								// move 'clicked_on' to 'to'
 								this.clicked_on = null;
 							} else {
-								//System.out.println("Illegal move to " + k + " located " + Arrays.toString(to));
+								// System.out.println("Illegal move to " + k + " located " + Arrays.toString(to));
 								// //System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
 							}
 
@@ -386,7 +410,15 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	private void setColoring() {
-		//TODO Generate array of the coloring sets of stuff
+		for (int x = 0; x < this.boardX; x++) {
+			for (int y = 0; y < this.boardY; y++) {
+				for (int z = 0; z < this.boardZ; z++) {
+					this.boardColorArray[indexOfBoardWall(x, y, z) + 0] = colorMap[this.cubeColors[x][y][z]][0];
+					this.boardColorArray[indexOfBoardWall(x, y, z) + 1] = colorMap[this.cubeColors[x][y][z]][1];
+					this.boardColorArray[indexOfBoardWall(x, y, z) + 2] = colorMap[this.cubeColors[x][y][z]][2];
+				}
+			}
+		}
 	}
 
 	public static int[] toLoc(double[] coord) {
@@ -554,8 +586,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	/**
-	 * Sorts the faces of the board from back to forward
-	 * Required for transparency
+	 * Sorts the faces of the board from back to forward Required for transparency
+	 * 
 	 * @return the index buffer for the board sorted from back to front
 	 */
 	private IntBuffer faceSort() {
@@ -568,9 +600,12 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	}
 
 	/**
-	 * Modified quicksort based on generic eval() function 
-	 * @param low index to sort
-	 * @param high index to sort
+	 * Modified quicksort based on generic eval() function
+	 * 
+	 * @param low
+	 *            index to sort
+	 * @param high
+	 *            index to sort
 	 */
 	private void quicksort(int low, int high) {
 		int i = low, j = high;
@@ -603,7 +638,9 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Finds the distance to a face
-	 * @param index of the face in boardVertexArray
+	 * 
+	 * @param index
+	 *            of the face in boardVertexArray
 	 * @return the distance to the midpoint of the face
 	 */
 	private double eval(int index) {
@@ -614,8 +651,11 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Swap 2 faces in the boardIndexArray
-	 * @param i first index in the boardIndexArray to swap
-	 * @param j second ''
+	 * 
+	 * @param i
+	 *            first index in the boardIndexArray to swap
+	 * @param j
+	 *            second ''
 	 */
 	private void exchange(int i, int j) {
 		int temp_1 = this.boardIndexArray[i], temp_2 = this.boardIndexArray[i + 1], temp_3 = this.boardIndexArray[i + 2], temp_4 = this.boardIndexArray[i + 3];
@@ -632,10 +672,15 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Finds the midpoint of a face
-	 * @param p_1 of the face
-	 * @param p_2 ''
-	 * @param p_3 ''
-	 * @param p_4 ''
+	 * 
+	 * @param p_1
+	 *            of the face
+	 * @param p_2
+	 *            ''
+	 * @param p_3
+	 *            ''
+	 * @param p_4
+	 *            ''
 	 * @return The midpoint of the face
 	 */
 	private Point3D getMidpointOfSquare(Point3D p_1, Point3D p_2, Point3D p_3, Point3D p_4) {
