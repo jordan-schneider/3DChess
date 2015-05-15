@@ -80,7 +80,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	Texture							texture;
 
 	private static final int		BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
-	private static final float[][]	colorMap			= { { 1f, 1f, 1f }, { 1f, 0f, 0f }, { 0f, 0f, 1f }, { 1f, 1f, 0f } };
+	private static final float[][]	colorMap			= { { 1f, 1f, 1f, 0.1f }, { 1f, 0f, 0f, 0.1f }, { 0f, 0f, 1f, 0.1f }, { 1f, 1f, 0f, 0.1f} };
 
 	/**
 	 * Creates a Canvas to render a given board
@@ -146,13 +146,16 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		setUpIndexArray();
 
-		this.boardColorArray = new float[3 * (1 + this.boardX) * (1 + this.boardY) * (1 + this.boardZ)];
+		this.boardColorArray = new float[4 * (1 + this.boardX) * (1 + this.boardY) * (1 + this.boardZ)];
 
 		try {
 			this.texture = TextureIO.newTexture(new File("TextureAtlas.png"), false);
 		} catch (GLException | IOException e1) {
 			e1.printStackTrace();
 		}
+		
+		//TODO fix this later
+		cubeColors = new int[6][6][6];
 
 		this.texture.bind(gl);
 		this.texture.enable(gl);
@@ -315,7 +318,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.boardColorBuffer = BufferUtil.newFloatBuffer(this.boardColorArray.length);
 		this.boardColorBuffer.put(this.boardColorArray);
 		this.boardColorBuffer.rewind();
-		gl.glColorPointer(this.boardColorArray.length, GL_UNSIGNED_INT, 0, this.boardColorBuffer);
+		gl.glColorPointer(4, GL_UNSIGNED_INT, 0, this.boardColorBuffer);
 
 		// Need to sort from back to front because transparency
 		this.boardIndexBuffer = faceSort();
@@ -413,9 +416,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		for (int x = 0; x < this.boardX; x++) {
 			for (int y = 0; y < this.boardY; y++) {
 				for (int z = 0; z < this.boardZ; z++) {
-					this.boardColorArray[indexOfBoardWall(x, y, z) + 0] = colorMap[this.cubeColors[x][y][z]][0];
-					this.boardColorArray[indexOfBoardWall(x, y, z) + 1] = colorMap[this.cubeColors[x][y][z]][1];
-					this.boardColorArray[indexOfBoardWall(x, y, z) + 2] = colorMap[this.cubeColors[x][y][z]][2];
+					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 0] = colorMap[this.cubeColors[x][y][z]][0];
+					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 1] = colorMap[this.cubeColors[x][y][z]][1];
+					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 2] = colorMap[this.cubeColors[x][y][z]][2];
+					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 3] = colorMap[this.cubeColors[x][y][z]][3];				
 				}
 			}
 		}
