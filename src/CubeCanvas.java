@@ -50,7 +50,6 @@ import com.sun.prism.impl.BufferUtil;
  *
  * @author Jordan
  */
-@SuppressWarnings("serial")
 public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
@@ -69,6 +68,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	private double					cameraX, cameraY, cameraZ;
 	private int						x_click, y_click;
 	private Piece					clicked_on			= null;
+	private Piece 					checked				= null;
 	private Point3D					point;
 
 	float[]							boardVertexArray, pieceVertexArray, textureCoordArray, boardColorArray;
@@ -81,7 +81,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	private static final int		BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
 	private static final float[][]	colorMap			= { { 1f, 1f, 1f, 0.1f }, { 1f, 0f, 0f, 0.1f }, { 0f, 0f, 1f, 0.1f }, { 1f, 1f, 0f, 0.1f} };
-
+	
 	/**
 	 * Creates a Canvas to render a given board
 	 * 
@@ -95,6 +95,29 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.boardX = board.getSize()[0];
 		this.boardY = board.getSize()[1];
 		this.boardZ = board.getSize()[2];
+	}
+	/**
+	 * 
+	 * @return colorArray for cube highlighting purposes.
+	 */
+	public int[][][] getHighlightArray(){
+		if(clicked_on==null){
+			if(checked==null){
+				return new int[5][5][5];
+			}else{
+				int[][][] a = new int[5][5][5];
+				a[checked.location[0]][checked.location[1]][checked.location[2]]=1;
+				return a;
+			}
+		}else{
+			int[][][] a = new int[5][5][5];
+			for(int[] move:clicked_on.getMoves())
+					a[move[0]][move[1]][move[2]]=3;
+			if(checked!=null)
+				a[checked.location[0]][checked.location[1]][checked.location[2]]=1;
+			a[clicked_on.location[0]][clicked_on.location[1]][clicked_on.location[2]]=2;
+			return a;
+		}
 	}
 
 	/**
@@ -389,6 +412,14 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								// System.out.println("Took " + k + " Piece takes " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
 								this.clicked_on = null;
+								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
+									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
+										if(p instanceof King){
+											this.checked=p;
+											break;
+										}
+								}else
+									checked=null;
 							} else {
 								// System.out.println("Illegal hit " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 							}
@@ -400,6 +431,14 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
 								// move 'clicked_on' to 'to'
 								this.clicked_on = null;
+								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
+									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
+										if(p instanceof King){
+											this.checked=p;
+											break;
+										}
+								}else
+									checked=null;
 							} else {
 								// System.out.println("Illegal move to " + k + " located " + Arrays.toString(to));
 								// //System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
