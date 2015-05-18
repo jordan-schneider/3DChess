@@ -67,8 +67,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	private double					theta				= 0, phi = 0, r;	// theta is the angle in the x-z plane. phi is the angle from the x-z plane to the vector
 	private double					cameraX, cameraY, cameraZ;
 	private int						x_click, y_click;
-	private Piece					clicked_on			= null;
-	private Piece 					checked				= null;
+	public Piece					clicked_on			= null;
+	public Piece 					checked				= null;
 	private Point3D					point;
 
 	float[]							boardVertexArray, pieceVertexArray, textureCoordArray, boardColorArray;
@@ -106,7 +106,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				return new int[5][5][5];
 			}else{
 				int[][][] a = new int[5][5][5];
-				a[checked.location[0]][checked.location[1]][checked.location[2]]=1;
+				a[checked.location[0]][checked.location[2]][checked.location[1]]=1;
 				return a;
 			}
 		}else{
@@ -114,8 +114,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			for(int[] move:clicked_on.getMoves())
 					a[move[0]][move[1]][move[2]]=3;
 			if(checked!=null)
-				a[checked.location[0]][checked.location[1]][checked.location[2]]=1;
-			a[clicked_on.location[0]][clicked_on.location[1]][clicked_on.location[2]]=2;
+				a[checked.location[0]][checked.location[2]][checked.location[1]]=1;
+			a[clicked_on.location[0]][clicked_on.location[2]][clicked_on.location[1]]=2;
 			return a;
 		}
 	}
@@ -304,7 +304,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		// Setting up the vertex and texture array data for the current set of pieces on the board
 		addPieceData();
-
+		this.cubeColors=this.getHighlightArray();
 		setColoring();
 
 		// Loads in the vertex array for pieces
@@ -410,7 +410,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 							} else if (this.board.isValidMove(this.clicked_on, to)) {
 								// move 'clicked_on' to 'to'
 								// System.out.println("Took " + k + " Piece takes " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
-								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
+								this.lg3d.informMove(this.clicked_on.location,to,this.lg3d.ids[this.lg3d.g.cPlayer]);
 								this.clicked_on = null;
 								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
 									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
@@ -428,7 +428,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 						} else {
 							if (this.board.isValidMove(this.clicked_on, to)) {
 								// System.out.println("Move to " + k + " located " + Arrays.toString(to));
-								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
+								this.lg3d.informMove(this.clicked_on.location,to,this.lg3d.ids[this.lg3d.g.cPlayer]);
 								// move 'clicked_on' to 'to'
 								this.clicked_on = null;
 								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
@@ -449,6 +449,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				}
 			}
 		}
+		lg3d.data.repaint();
 	}
 
 	private void setColoring() {

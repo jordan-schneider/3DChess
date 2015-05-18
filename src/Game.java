@@ -115,7 +115,7 @@ public class Game extends Thread{
 			if(kill)
 				break;
 			int ctemp=cPlayer;
-			players[cPlayer].requestMove();
+
 			timeOfLastAction=System.currentTimeMillis();
 			timeLeft[cPlayer]+=tc.incr[cPlayer]*1000;
 
