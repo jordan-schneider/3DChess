@@ -81,7 +81,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	private static final int		BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
 	private static final float[][]	colorMap			= { { 1f, 1f, 1f, 0.1f }, { 1f, 0f, 0f, 0.1f }, { 0f, 0f, 1f, 0.1f }, { 1f, 1f, 0f, 0.1f} };
-	
+
 	/**
 	 * Creates a Canvas to render a given board
 	 * 
@@ -106,18 +106,18 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				return new int[6][6][6];
 			} else {
 				int[][][] a = new int[6][6][6];
-				a[this.checked.location[0]][this.checked.location[1]][this.checked.location[2]] = 1;
+				a[this.checked.location[0]][this.checked.location[2]][this.checked.location[1]] = 1;
 				return a;
 			}
 		} else {
 			int[][][] a = new int[6][6][6];
 			for (int[] move : this.clicked_on.getMoves()) {
-				a[move[0]][move[1]][move[2]] = 3;
+				a[move[0]][move[2]][move[1]] = 3;
 			}
 			if (this.checked != null) {
-				a[this.checked.location[0]][this.checked.location[1]][this.checked.location[2]] = 1;
+				a[this.checked.location[0]][this.checked.location[2]][this.checked.location[1]] = 1;
 			}
-			a[this.clicked_on.location[0]][this.clicked_on.location[1]][this.clicked_on.location[2]] = 2;
+			a[this.clicked_on.location[0]][this.clicked_on.location[2]][this.clicked_on.location[1]] = 2;
 			return a;
 		}
 	}
@@ -178,7 +178,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		} catch (GLException | IOException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		//TODO fix this later
 		cubeColors = new int[6][6][6];
 
@@ -297,7 +297,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity(); // reset the model-view matrix
-
+		assignCubeColors();
 		// Point the camera towards the middle and do rotations
 		orientCamera();
 		/*
@@ -306,7 +306,6 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		// Setting up the vertex and texture array data for the current set of pieces on the board
 		addPieceData();
-		this.cubeColors=this.getHighlightArray();
 		setColoring();
 
 		// Loads in the vertex array for pieces
@@ -343,7 +342,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.boardColorBuffer = BufferUtil.newFloatBuffer(this.boardColorArray.length);
 		this.boardColorBuffer.put(this.boardColorArray);
 		this.boardColorBuffer.rewind();
-		gl.glColorPointer(4, GL_UNSIGNED_INT, 0, this.boardColorBuffer);
+		gl.glColorPointer(4, GL_FLOAT, 0, this.boardColorBuffer);
 
 		// Need to sort from back to front because transparency
 		this.boardIndexBuffer = faceSort();
@@ -359,6 +358,30 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glDisableClientState(GL_COLOR_ARRAY);
 
 		// Clicking logic detection
+		processClicks(gl);
+		lg3d.data.repaint();
+	}
+
+	private void assignCubeColors() {
+		this.cubeColors = getHighlightArray();
+		for (int i = this.cubeColors.length - 1; i >= 0; i--) {
+			for (int j = this.cubeColors.length - 1; j >= 0; j--) {
+				for (int k = this.cubeColors.length - 1; k >= 0; k--) {
+					if (this.cubeColors[i][j][k] != 0) {
+						this.cubeColors[i][j][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i][j + 1][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j + 1][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i][j + 1][k] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j][k] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j + 1][k] = this.cubeColors[i][j][k];
+					}
+				}
+			}
+		}
+	}
+
+	private void processClicks(GL2 gl){
 		if (this.x_click >= 0) {
 			int viewport[] = new int[4];
 			double modelview[] = new double[16];
@@ -415,8 +438,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								this.lg3d.informMove(this.clicked_on.location,to,this.lg3d.ids[this.lg3d.g.cPlayer]);
 								this.clicked_on = null;
 								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
+									System.out.println("In check");
 									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
 										if(p instanceof King){
+											System.out.println("Found King");
 											this.checked=p;
 											break;
 										}
@@ -434,8 +459,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								// move 'clicked_on' to 'to'
 								this.clicked_on = null;
 								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
+									System.out.println("In check");
 									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
 										if(p instanceof King){
+											System.out.println("Found King");
 											this.checked=p;
 											break;
 										}
@@ -451,9 +478,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				}
 			}
 		}
-		lg3d.data.repaint();
 	}
-
 	private void setColoring() {
 		for (int x = 0; x < this.boardX; x++) {
 			for (int y = 0; y < this.boardY; y++) {
@@ -496,30 +521,30 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			// Figure out which texture to use
 			int piece;
 			switch (p.cCode) {
-				case 'B':
-					piece = BISHOP;
-					break;
-				case 'K':
-					piece = KING;
-					break;
-				case 'N':
-					piece = KNIGHT;
-					break;
-				case 'P':
-					piece = PAWN;
-					break;
-				case 'Q':
-					piece = QUEEN;
-					break;
-				case 'R':
-					piece = ROOK;
-					break;
-				case 'U':
-					piece = UNICORN;
-					break;
-				default:
-					piece = -1;
-					System.err.println("Invalid Piece Designation");
+			case 'B':
+				piece = BISHOP;
+				break;
+			case 'K':
+				piece = KING;
+				break;
+			case 'N':
+				piece = KNIGHT;
+				break;
+			case 'P':
+				piece = PAWN;
+				break;
+			case 'Q':
+				piece = QUEEN;
+				break;
+			case 'R':
+				piece = ROOK;
+				break;
+			case 'U':
+				piece = UNICORN;
+				break;
+			default:
+				piece = -1;
+				System.err.println("Invalid Piece Designation");
 			}
 
 			TextureCoords current = this.texture.getSubImageTexCoords(piece, p.owner * 600, piece + 600, (p.owner * 600) + 600); // king and white are the size of the increment
@@ -531,82 +556,82 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				int dimension = face / 2;
 				float dimMod = (face % 2) * 0.6f;
 				switch (dimension) {
-					case 0: // x
-						this.pieceVertexArray[baseIndexInVertexArray + 0 + (face * 12)] = p.location[0] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 1 + (face * 12)] = p.location[2] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 2 + (face * 12)] = p.location[1] + .2f;
-						this.textureCoordArray[baseIndexInTextureArray + 0 + (face * 8)] = current.right();
-						this.textureCoordArray[baseIndexInTextureArray + 1 + (face * 8)] = current.bottom();
+				case 0: // x
+					this.pieceVertexArray[baseIndexInVertexArray + 0 + (face * 12)] = p.location[0] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 1 + (face * 12)] = p.location[2] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 2 + (face * 12)] = p.location[1] + .2f;
+					this.textureCoordArray[baseIndexInTextureArray + 0 + (face * 8)] = current.right();
+					this.textureCoordArray[baseIndexInTextureArray + 1 + (face * 8)] = current.bottom();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 3 + (face * 12)] = p.location[0] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 4 + (face * 12)] = p.location[2] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 5 + (face * 12)] = p.location[1] + .2f;
-						this.textureCoordArray[baseIndexInTextureArray + 2 + (face * 8)] = current.left();
-						this.textureCoordArray[baseIndexInTextureArray + 3 + (face * 8)] = current.bottom();
+					this.pieceVertexArray[baseIndexInVertexArray + 3 + (face * 12)] = p.location[0] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 4 + (face * 12)] = p.location[2] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 5 + (face * 12)] = p.location[1] + .2f;
+					this.textureCoordArray[baseIndexInTextureArray + 2 + (face * 8)] = current.left();
+					this.textureCoordArray[baseIndexInTextureArray + 3 + (face * 8)] = current.bottom();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 6 + (face * 12)] = p.location[0] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 7 + (face * 12)] = p.location[2] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 8 + (face * 12)] = p.location[1] + .8f;
-						this.textureCoordArray[baseIndexInTextureArray + 4 + (face * 8)] = current.left();
-						this.textureCoordArray[baseIndexInTextureArray + 5 + (face * 8)] = current.top();
+					this.pieceVertexArray[baseIndexInVertexArray + 6 + (face * 12)] = p.location[0] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 7 + (face * 12)] = p.location[2] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 8 + (face * 12)] = p.location[1] + .8f;
+					this.textureCoordArray[baseIndexInTextureArray + 4 + (face * 8)] = current.left();
+					this.textureCoordArray[baseIndexInTextureArray + 5 + (face * 8)] = current.top();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 9 + (face * 12)] = p.location[0] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 10 + (face * 12)] = p.location[2] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 11 + (face * 12)] = p.location[1] + .8f;
-						this.textureCoordArray[baseIndexInTextureArray + 6 + (face * 8)] = current.right();
-						this.textureCoordArray[baseIndexInTextureArray + 7 + (face * 8)] = current.top();
-						break;
-					case 1: // y
-						this.pieceVertexArray[baseIndexInVertexArray + 0 + (face * 12)] = p.location[0] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 1 + (face * 12)] = p.location[2] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 2 + (face * 12)] = p.location[1] + .2f;
-						this.textureCoordArray[baseIndexInTextureArray + 0 + (face * 8)] = current.left();
-						this.textureCoordArray[baseIndexInTextureArray + 1 + (face * 8)] = current.bottom();
+					this.pieceVertexArray[baseIndexInVertexArray + 9 + (face * 12)] = p.location[0] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 10 + (face * 12)] = p.location[2] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 11 + (face * 12)] = p.location[1] + .8f;
+					this.textureCoordArray[baseIndexInTextureArray + 6 + (face * 8)] = current.right();
+					this.textureCoordArray[baseIndexInTextureArray + 7 + (face * 8)] = current.top();
+					break;
+				case 1: // y
+					this.pieceVertexArray[baseIndexInVertexArray + 0 + (face * 12)] = p.location[0] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 1 + (face * 12)] = p.location[2] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 2 + (face * 12)] = p.location[1] + .2f;
+					this.textureCoordArray[baseIndexInTextureArray + 0 + (face * 8)] = current.left();
+					this.textureCoordArray[baseIndexInTextureArray + 1 + (face * 8)] = current.bottom();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 3 + (face * 12)] = p.location[0] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 4 + (face * 12)] = p.location[2] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 5 + (face * 12)] = p.location[1] + .2f;
-						this.textureCoordArray[baseIndexInTextureArray + 2 + (face * 8)] = current.right();
-						this.textureCoordArray[baseIndexInTextureArray + 3 + (face * 8)] = current.bottom();
+					this.pieceVertexArray[baseIndexInVertexArray + 3 + (face * 12)] = p.location[0] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 4 + (face * 12)] = p.location[2] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 5 + (face * 12)] = p.location[1] + .2f;
+					this.textureCoordArray[baseIndexInTextureArray + 2 + (face * 8)] = current.right();
+					this.textureCoordArray[baseIndexInTextureArray + 3 + (face * 8)] = current.bottom();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 6 + (face * 12)] = p.location[0] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 7 + (face * 12)] = p.location[2] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 8 + (face * 12)] = p.location[1] + .8f;
-						this.textureCoordArray[baseIndexInTextureArray + 4 + (face * 8)] = current.right();
-						this.textureCoordArray[baseIndexInTextureArray + 5 + (face * 8)] = current.top();
+					this.pieceVertexArray[baseIndexInVertexArray + 6 + (face * 12)] = p.location[0] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 7 + (face * 12)] = p.location[2] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 8 + (face * 12)] = p.location[1] + .8f;
+					this.textureCoordArray[baseIndexInTextureArray + 4 + (face * 8)] = current.right();
+					this.textureCoordArray[baseIndexInTextureArray + 5 + (face * 8)] = current.top();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 9 + (face * 12)] = p.location[0] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 10 + (face * 12)] = p.location[2] + .2f + dimMod;
-						this.pieceVertexArray[baseIndexInVertexArray + 11 + (face * 12)] = p.location[1] + .8f;
-						this.textureCoordArray[baseIndexInTextureArray + 6 + (face * 8)] = current.left();
-						this.textureCoordArray[baseIndexInTextureArray + 7 + (face * 8)] = current.top();
-						break;
+					this.pieceVertexArray[baseIndexInVertexArray + 9 + (face * 12)] = p.location[0] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 10 + (face * 12)] = p.location[2] + .2f + dimMod;
+					this.pieceVertexArray[baseIndexInVertexArray + 11 + (face * 12)] = p.location[1] + .8f;
+					this.textureCoordArray[baseIndexInTextureArray + 6 + (face * 8)] = current.left();
+					this.textureCoordArray[baseIndexInTextureArray + 7 + (face * 8)] = current.top();
+					break;
 
-					case 2: // z
-						this.pieceVertexArray[baseIndexInVertexArray + 0 + (face * 12)] = p.location[0] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 1 + (face * 12)] = p.location[2] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 2 + (face * 12)] = p.location[1] + .2f + dimMod;
-						this.textureCoordArray[baseIndexInTextureArray + 0 + (face * 8)] = current.left();
-						this.textureCoordArray[baseIndexInTextureArray + 1 + (face * 8)] = current.bottom();
+				case 2: // z
+					this.pieceVertexArray[baseIndexInVertexArray + 0 + (face * 12)] = p.location[0] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 1 + (face * 12)] = p.location[2] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 2 + (face * 12)] = p.location[1] + .2f + dimMod;
+					this.textureCoordArray[baseIndexInTextureArray + 0 + (face * 8)] = current.left();
+					this.textureCoordArray[baseIndexInTextureArray + 1 + (face * 8)] = current.bottom();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 3 + (face * 12)] = p.location[0] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 4 + (face * 12)] = p.location[2] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 5 + (face * 12)] = p.location[1] + .2f + dimMod;
-						this.textureCoordArray[baseIndexInTextureArray + 2 + (face * 8)] = current.right();
-						this.textureCoordArray[baseIndexInTextureArray + 3 + (face * 8)] = current.bottom();
+					this.pieceVertexArray[baseIndexInVertexArray + 3 + (face * 12)] = p.location[0] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 4 + (face * 12)] = p.location[2] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 5 + (face * 12)] = p.location[1] + .2f + dimMod;
+					this.textureCoordArray[baseIndexInTextureArray + 2 + (face * 8)] = current.right();
+					this.textureCoordArray[baseIndexInTextureArray + 3 + (face * 8)] = current.bottom();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 6 + (face * 12)] = p.location[0] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 7 + (face * 12)] = p.location[2] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 8 + (face * 12)] = p.location[1] + .2f + dimMod;
-						this.textureCoordArray[baseIndexInTextureArray + 4 + (face * 8)] = current.right();
-						this.textureCoordArray[baseIndexInTextureArray + 5 + (face * 8)] = current.top();
+					this.pieceVertexArray[baseIndexInVertexArray + 6 + (face * 12)] = p.location[0] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 7 + (face * 12)] = p.location[2] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 8 + (face * 12)] = p.location[1] + .2f + dimMod;
+					this.textureCoordArray[baseIndexInTextureArray + 4 + (face * 8)] = current.right();
+					this.textureCoordArray[baseIndexInTextureArray + 5 + (face * 8)] = current.top();
 
-						this.pieceVertexArray[baseIndexInVertexArray + 9 + (face * 12)] = p.location[0] + .2f;
-						this.pieceVertexArray[baseIndexInVertexArray + 10 + (face * 12)] = p.location[2] + .8f;
-						this.pieceVertexArray[baseIndexInVertexArray + 11 + (face * 12)] = p.location[1] + .2f + dimMod;
-						this.textureCoordArray[baseIndexInTextureArray + 6 + (face * 8)] = current.left();
-						this.textureCoordArray[baseIndexInTextureArray + 7 + (face * 8)] = current.top();
-						break;
+					this.pieceVertexArray[baseIndexInVertexArray + 9 + (face * 12)] = p.location[0] + .2f;
+					this.pieceVertexArray[baseIndexInVertexArray + 10 + (face * 12)] = p.location[2] + .8f;
+					this.pieceVertexArray[baseIndexInVertexArray + 11 + (face * 12)] = p.location[1] + .2f + dimMod;
+					this.textureCoordArray[baseIndexInTextureArray + 6 + (face * 8)] = current.left();
+					this.textureCoordArray[baseIndexInTextureArray + 7 + (face * 8)] = current.top();
+					break;
 				}
 			}
 			pieceRendered++;
