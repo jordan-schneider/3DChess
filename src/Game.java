@@ -23,11 +23,10 @@ public class Game extends Thread{
 	 * @param p2id - Second player id
 	 * @param ui - UI manager for the game
 	 */
-	public Game(Opponent p1,long p1id,Opponent p2,long p2id,UI ui,TimeControl tc){
+	public Game(Opponent p1,Opponent p2,UI ui,TimeControl tc){
 		players = new Opponent[2];
 		players[0]=p1;
 		players[1]=p2;
-		board = new RaumschachBoard(players[0],players[1]);
 		cPlayer = 0;
 		movesIn=0;
 		timeOfLastAction=-1;
@@ -36,10 +35,14 @@ public class Game extends Thread{
 		this.tc=tc;
 		timeLeft[0]=tc.sTime[0]*60000;
 		timeLeft[1]=tc.sTime[1]*60000;
-		p1.init(this, p1id);
-		p2.init(this, p2id);
-		ids=new long[]{p1id,p2id};
+		ids=new long[]{p1.id,p2.id};
 		this.ui=ui;
+	}
+	
+	public void init(){
+		board = new RaumschachBoard(players[0],players[1]);
+		players[0].init(this, players[0].id);
+		players[1].init(this, players[1].id);
 	}
 	boolean kill=false;
 	public synchronized void reset(){
