@@ -100,22 +100,24 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	 * 
 	 * @return colorArray for cube highlighting purposes.
 	 */
-	public int[][][] getHighlightArray(){
-		if(clicked_on==null){
-			if(checked==null){
-				return new int[5][5][5];
-			}else{
-				int[][][] a = new int[5][5][5];
-				a[checked.location[0]][checked.location[2]][checked.location[1]]=1;
+	public int[][][] getHighlightArray() {
+		if (this.clicked_on == null) {
+			if (this.checked == null) {
+				return new int[6][6][6];
+			} else {
+				int[][][] a = new int[6][6][6];
+				a[this.checked.location[0]][this.checked.location[1]][this.checked.location[2]] = 1;
 				return a;
 			}
-		}else{
-			int[][][] a = new int[5][5][5];
-			for(int[] move:clicked_on.getMoves())
-					a[move[0]][move[1]][move[2]]=3;
-			if(checked!=null)
-				a[checked.location[0]][checked.location[2]][checked.location[1]]=1;
-			a[clicked_on.location[0]][clicked_on.location[2]][clicked_on.location[1]]=2;
+		} else {
+			int[][][] a = new int[6][6][6];
+			for (int[] move : this.clicked_on.getMoves()) {
+				a[move[0]][move[1]][move[2]] = 3;
+			}
+			if (this.checked != null) {
+				a[this.checked.location[0]][this.checked.location[1]][this.checked.location[2]] = 1;
+			}
+			a[this.clicked_on.location[0]][this.clicked_on.location[1]][this.clicked_on.location[2]] = 2;
 			return a;
 		}
 	}
