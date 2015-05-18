@@ -451,6 +451,7 @@ public class Basic_AI extends Opponent {
 
 	@Override
 	void requestMove() {
+		System.out.println("Boss");
 		new Thread()
 		{
 			public void run() {

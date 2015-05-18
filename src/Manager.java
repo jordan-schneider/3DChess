@@ -9,5 +9,4 @@ public class Manager {
 		Game g=new Game(a,0,b,1,gui,new TimeControl(5,0,0));
 		gui.init(new Opponent[]{a,b},new long[]{a.id,b.id},g);
 	}
-
 }
