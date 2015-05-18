@@ -52,9 +52,6 @@ import com.sun.prism.impl.BufferUtil;
  */
 public class CubeCanvas extends GLCanvas implements GLEventListener {
 
-	/**
-	 *
-	 */
 	private static final long		serialVersionUID	= 1L;
 
 	private GLU						glu;
@@ -64,11 +61,11 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	int								boardX, boardY, boardZ;
 
-	private double					theta				= 0, phi = 0, r;	// theta is the angle in the x-z plane. phi is the angle from the x-z plane to the vector
+	private double					theta				= 0, phi = 0, r; // theta is the angle in the x-z plane. phi is the angle from the x-z plane to the vector
 	private double					cameraX, cameraY, cameraZ;
 	private int						x_click, y_click;
 	private Piece					clicked_on			= null;
-	private Piece 					checked				= null;
+	private Piece					checked				= null;
 	private Point3D					point;
 
 	float[]							boardVertexArray, pieceVertexArray, textureCoordArray, boardColorArray;
@@ -80,11 +77,11 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 	Texture							texture;
 
 	private static final int		BISHOP				= 0, KING = 600, KNIGHT = 1200, PAWN = 1800, QUEEN = 2400, ROOK = 3000, UNICORN = 3600;
-	private static final float[][]	colorMap			= { { 1f, 1f, 1f, 0.1f }, { 1f, 0f, 0f, 0.1f }, { 0f, 0f, 1f, 0.1f }, { 1f, 1f, 0f, 0.1f} };
-	
+	private static final float[][]	colorMap			= { { 1f, 1f, 1f, .1f }, { 1f, 0f, 0f, .3f }, { 0f, 0f, 1f, .3f }, { 1f, 1f, 0f, .3f } };
+
 	/**
 	 * Creates a Canvas to render a given board
-	 * 
+	 *
 	 * @param board
 	 *            to render
 	 */
@@ -96,26 +93,28 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		this.boardY = board.getSize()[1];
 		this.boardZ = board.getSize()[2];
 	}
+
 	/**
-	 * 
 	 * @return colorArray for cube highlighting purposes.
 	 */
-	public int[][][] getHighlightArray(){
-		if(clicked_on==null){
-			if(checked==null){
-				return new int[5][5][5];
-			}else{
-				int[][][] a = new int[5][5][5];
-				a[checked.location[0]][checked.location[1]][checked.location[2]]=1;
+	public int[][][] getHighlightArray() {
+		if (this.clicked_on == null) {
+			if (this.checked == null) {
+				return new int[6][6][6];
+			} else {
+				int[][][] a = new int[6][6][6];
+				a[this.checked.location[0]][this.checked.location[1]][this.checked.location[2]] = 1;
 				return a;
 			}
-		}else{
-			int[][][] a = new int[5][5][5];
-			for(int[] move:clicked_on.getMoves())
-					a[move[0]][move[1]][move[2]]=3;
-			if(checked!=null)
-				a[checked.location[0]][checked.location[1]][checked.location[2]]=1;
-			a[clicked_on.location[0]][clicked_on.location[1]][clicked_on.location[2]]=2;
+		} else {
+			int[][][] a = new int[6][6][6];
+			for (int[] move : this.clicked_on.getMoves()) {
+				a[move[0]][move[1]][move[2]] = 3;
+			}
+			if (this.checked != null) {
+				a[this.checked.location[0]][this.checked.location[1]][this.checked.location[2]] = 1;
+			}
+			a[this.clicked_on.location[0]][this.clicked_on.location[1]][this.clicked_on.location[2]] = 2;
 			return a;
 		}
 	}
@@ -176,9 +175,6 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		} catch (GLException | IOException e1) {
 			e1.printStackTrace();
 		}
-		
-		//TODO fix this later
-		cubeColors = new int[6][6][6];
 
 		this.texture.bind(gl);
 		this.texture.enable(gl);
@@ -265,7 +261,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Converts from coordinates to indicies
-	 * 
+	 *
 	 * @param x
 	 *            coordinate of vertex
 	 * @param y
@@ -280,7 +276,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Converts a boardVertexArray index to a Point3D
-	 * 
+	 *
 	 * @param index
 	 *            in boardVertexArray
 	 * @return Point3D of the point represented
@@ -296,16 +292,13 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear color and depth buffers
 		gl.glLoadIdentity(); // reset the model-view matrix
 
+		assignCubeColors();
+
 		// Point the camera towards the middle and do rotations
 		orientCamera();
-		/*
-		 * for(Point3D point:points){ for(int i=0;i<5;i++){ gl.glTranslated(point.getX()*0.1,point.getY()*0.1,point.getZ()*0.1); gl.glColor3f(0.3f, 0.5f, 1f); GLUquadric earth = glu.gluNewQuadric(); glu.gluQuadricDrawStyle(earth, GLU.GLU_FILL); glu.gluQuadricNormals(earth, GLU.GLU_FLAT); glu.gluQuadricOrientation(earth, GLU.GLU_OUTSIDE); final float radius = 0.001f; final int slices = 16; final int stacks = 16; glu.gluSphere(earth, radius, slices, stacks); glu.gluDeleteQuadric(earth); } for(int i=0;i<5;i++) gl.glTranslated(-point.getX()*0.1,-point.getY()*0.1,-point.getZ()*0.1); }
-		 */
 
 		// Setting up the vertex and texture array data for the current set of pieces on the board
 		addPieceData();
-
-		setColoring();
 
 		// Loads in the vertex array for pieces
 		gl.glEnableClientState(GL_VERTEX_ARRAY);
@@ -337,11 +330,13 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 		// Set the color
 		gl.glEnableClientState(GLPointerFunc.GL_COLOR_ARRAY);
-
+		
+		setColoring();
+		
 		this.boardColorBuffer = BufferUtil.newFloatBuffer(this.boardColorArray.length);
 		this.boardColorBuffer.put(this.boardColorArray);
 		this.boardColorBuffer.rewind();
-		gl.glColorPointer(4, GL_UNSIGNED_INT, 0, this.boardColorBuffer);
+		gl.glColorPointer(4, GL_FLOAT, 0, this.boardColorBuffer);
 
 		// Need to sort from back to front because transparency
 		this.boardIndexBuffer = faceSort();
@@ -357,6 +352,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		gl.glDisableClientState(GL_COLOR_ARRAY);
 
 		// Clicking logic detection
+		processClicks(gl);
+	}
+
+	private void processClicks(GL2 gl) {
 		if (this.x_click >= 0) {
 			int viewport[] = new int[4];
 			double modelview[] = new double[16];
@@ -372,9 +371,9 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			winY = (float) viewport[3] - (float) this.y_click;
 			boolean test = this.glu.gluUnProject(winX, winY, 0.0, modelview, 0, projection, 0, viewport, 0, wcoord1, 0);
 			test = test && this.glu.gluUnProject(winX, winY, 1.0, modelview, 0, projection, 0, viewport, 0, wcoord2, 0);
-			// //System.out.println("pre: "+x_click+","+y_click);
-			// //System.out.println("x: " + (wcoord2[0]-wcoord1[0]) +"y: "+(wcoord2[1]-wcoord1[1])+"z: "+(wcoord2[2]-wcoord1[2])+" worked? "+test);
-			// //System.out.println(this.cameraX+","+this.cameraY+","+this.cameraZ);
+			// System.out.println("pre: "+x_click+","+y_click);
+			// System.out.println("x: " + (wcoord2[0]-wcoord1[0]) +"y: "+(wcoord2[1]-wcoord1[1])+"z: "+(wcoord2[2]-wcoord1[2])+" worked? "+test);
+			// System.out.println(this.cameraX+","+this.cameraY+","+this.cameraZ);
 
 			this.x_click = -1;
 			this.point = (new Point3D(wcoord2[0] - wcoord1[0], wcoord2[1] - wcoord1[1], wcoord2[2] - wcoord1[2]));
@@ -382,7 +381,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			for (double k = 0; k < 1; k += 0.001) {
 
 				int[] to = toLoc(new double[] { this.cameraX + (this.point.getX() * k), this.cameraY + (this.point.getY() * k), this.cameraZ + (this.point.getZ() * k) });
-				// //System.out.println(Arrays.toString(new double[]{this.cameraX+point.getX()*k,this.cameraY+point.getY()*k,this.cameraZ+point.getZ()*k}));
+				// System.out.println(Arrays.toString(new double[]{this.cameraX+point.getX()*k,this.cameraY+point.getY()*k,this.cameraZ+point.getZ()*k}));
 				if (prevto == null) {
 					;
 				} else if (to == null) {
@@ -394,36 +393,35 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 				if (to != null) {
 					if (this.clicked_on == null) {
 						if (this.board.getAt(to) != null) {
-							// //System.out.println("Selected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
+							// System.out.println("Selected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 							this.clicked_on = this.board.getAt(to);
 							break;
 						} else {
-
-							// //System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
-
+							// System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
 						}
 					} else {
 						if (this.board.getAt(to) != null) {
 							if (this.clicked_on == this.board.getAt(to)) {
-								// //System.out.println("Unselected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
+								// System.out.println("Unselected " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 								this.clicked_on = null;
 							} else if (this.board.isValidMove(this.clicked_on, to)) {
 								// move 'clicked_on' to 'to'
 								// System.out.println("Took " + k + " Piece takes " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
 								this.clicked_on = null;
-								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
-									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
-										if(p instanceof King){
-											this.checked=p;
+								if (this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)) {
+									for (Piece p : this.lg3d.g.cPlayer == Board.BLACK ? this.lg3d.g.board.blackpiece : this.lg3d.g.board.whitepiece) {
+										if (p instanceof King) {
+											this.checked = p;
 											break;
 										}
-								}else
-									checked=null;
+									}
+								} else {
+									this.checked = null;
+								}
 							} else {
 								// System.out.println("Illegal hit " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 							}
-							// clicked_on=this.board.getAt(to);
 							break;
 						} else {
 							if (this.board.isValidMove(this.clicked_on, to)) {
@@ -431,39 +429,71 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								this.lg3d.g.makeMove(this.clicked_on.location, to, this.lg3d.ids[this.lg3d.g.cPlayer]);
 								// move 'clicked_on' to 'to'
 								this.clicked_on = null;
-								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
-									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
-										if(p instanceof King){
-											this.checked=p;
+								if (this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)) {
+									for (Piece p : this.lg3d.g.cPlayer == Board.BLACK ? this.lg3d.g.board.blackpiece : this.lg3d.g.board.whitepiece) {
+										if (p instanceof King) {
+											this.checked = p;
 											break;
 										}
-								}else
-									checked=null;
+									}
+								} else {
+									this.checked = null;
+								}
 							} else {
 								// System.out.println("Illegal move to " + k + " located " + Arrays.toString(to));
-								// //System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
+								// System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
 							}
 
 						}
 					}
 				}
 			}
-		}
+		}	
 	}
 
-	private void setColoring() {
-		for (int x = 0; x < this.boardX; x++) {
-			for (int y = 0; y < this.boardY; y++) {
-				for (int z = 0; z < this.boardZ; z++) {
-					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 0] = colorMap[this.cubeColors[x][y][z]][0];
-					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 1] = colorMap[this.cubeColors[x][y][z]][1];
-					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 2] = colorMap[this.cubeColors[x][y][z]][2];
-					this.boardColorArray[4*indexOfBoardWall(x, y, z) + 3] = colorMap[this.cubeColors[x][y][z]][3];				
+	/**
+	 * 
+	 */
+	private void assignCubeColors() {
+		this.cubeColors = getHighlightArray();
+		for (int i = this.cubeColors.length - 1; i >= 0; i--) {
+			for (int j = this.cubeColors.length - 1; j >= 0; j--) {
+				for (int k = this.cubeColors.length - 1; k >= 0; k--) {
+					if (this.cubeColors[i][j][k] != 0) {
+						this.cubeColors[i][j][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i][j + 1][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j + 1][k + 1] = this.cubeColors[i][j][k];
+						this.cubeColors[i][j + 1][k] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j][k] = this.cubeColors[i][j][k];
+						this.cubeColors[i + 1][j + 1][k] = this.cubeColors[i][j][k];
+					}
 				}
 			}
 		}
 	}
 
+	/**
+	 * 
+	 */
+	private void setColoring() {
+		for (int x = 0; x < this.boardX; x++) {
+			for (int y = 0; y < this.boardY; y++) {
+				for (int z = 0; z < this.boardZ; z++) {
+					this.boardColorArray[(4 * indexOfBoardWall(x, y, z)) + 0] = colorMap[this.cubeColors[x][y][z]][0];
+					this.boardColorArray[(4 * indexOfBoardWall(x, y, z)) + 1] = colorMap[this.cubeColors[x][y][z]][1];
+					this.boardColorArray[(4 * indexOfBoardWall(x, y, z)) + 2] = colorMap[this.cubeColors[x][y][z]][2];
+					this.boardColorArray[(4 * indexOfBoardWall(x, y, z)) + 3] = colorMap[this.cubeColors[x][y][z]][3];
+				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param coord
+	 * @return
+	 */
 	public static int[] toLoc(double[] coord) {
 		int[] r = new int[3];
 		for (int i = 0; i < 3; i++) {
@@ -630,7 +660,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Sorts the faces of the board from back to forward Required for transparency
-	 * 
+	 *
 	 * @return the index buffer for the board sorted from back to front
 	 */
 	private IntBuffer faceSort() {
@@ -644,7 +674,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Modified quicksort based on generic eval() function
-	 * 
+	 *
 	 * @param low
 	 *            index to sort
 	 * @param high
@@ -681,7 +711,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Finds the distance to a face
-	 * 
+	 *
 	 * @param index
 	 *            of the face in boardVertexArray
 	 * @return the distance to the midpoint of the face
@@ -694,7 +724,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Swap 2 faces in the boardIndexArray
-	 * 
+	 *
 	 * @param i
 	 *            first index in the boardIndexArray to swap
 	 * @param j
@@ -715,7 +745,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 
 	/**
 	 * Finds the midpoint of a face
-	 * 
+	 *
 	 * @param p_1
 	 *            of the face
 	 * @param p_2
