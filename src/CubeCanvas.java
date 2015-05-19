@@ -112,7 +112,10 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 		} else {
 			int[][][] a = new int[6][6][6];
 			for (int[] move : this.clicked_on.getMoves()) {
-				a[move[0]][move[2]][move[1]] = 3;
+				if(this.lg3d.g.board.getAt(move)==null)
+					a[move[0]][move[2]][move[1]] = 3;
+				else
+					a[move[0]][move[2]][move[1]] = 1;
 			}
 			if (this.checked != null) {
 				a[this.checked.location[0]][this.checked.location[2]][this.checked.location[1]] = 1;
@@ -368,13 +371,20 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 			for (int j = this.cubeColors.length - 1; j >= 0; j--) {
 				for (int k = this.cubeColors.length - 1; k >= 0; k--) {
 					if (this.cubeColors[i][j][k] != 0) {
-						this.cubeColors[i][j][k + 1] = this.cubeColors[i][j][k];
-						this.cubeColors[i + 1][j][k + 1] = this.cubeColors[i][j][k];
-						this.cubeColors[i][j + 1][k + 1] = this.cubeColors[i][j][k];
-						this.cubeColors[i + 1][j + 1][k + 1] = this.cubeColors[i][j][k];
-						this.cubeColors[i][j + 1][k] = this.cubeColors[i][j][k];
-						this.cubeColors[i + 1][j][k] = this.cubeColors[i][j][k];
-						this.cubeColors[i + 1][j + 1][k] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i][j][k+1]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i][j][k + 1] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i+1][j][k+1]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i + 1][j][k + 1] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i][j+1][k+1]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i][j + 1][k + 1] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i+1][j+1][k+1]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i + 1][j + 1][k + 1] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i][j+1][k]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i][j + 1][k] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i+1][j][k]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i + 1][j][k] = this.cubeColors[i][j][k];
+						if(this.cubeColors[i+1][j+1][k]==0||this.cubeColors[i][j][k]!=3)
+							this.cubeColors[i + 1][j + 1][k] = this.cubeColors[i][j][k];
 					}
 				}
 			}
@@ -437,16 +447,8 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								// System.out.println("Took " + k + " Piece takes " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 								this.lg3d.informMove(this.clicked_on.location,to,this.lg3d.ids[this.lg3d.g.cPlayer]);
 								this.clicked_on = null;
-								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
-									System.out.println("In check");
-									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
-										if(p instanceof King){
-											System.out.println("Found King");
-											this.checked=p;
-											break;
-										}
-								}else
-									checked=null;
+
+								break;
 							} else {
 								// System.out.println("Illegal hit " + k + " Ray intersects " + this.board.getAt(to).cCode + " located in " + Arrays.toString(to));
 							}
@@ -458,16 +460,7 @@ public class CubeCanvas extends GLCanvas implements GLEventListener {
 								this.lg3d.informMove(this.clicked_on.location,to,this.lg3d.ids[this.lg3d.g.cPlayer]);
 								// move 'clicked_on' to 'to'
 								this.clicked_on = null;
-								if(this.lg3d.g.board.isCheck(this.lg3d.g.cPlayer)){
-									System.out.println("In check");
-									for(Piece p:this.lg3d.g.cPlayer==Board.BLACK?this.lg3d.g.board.blackpiece:this.lg3d.g.board.whitepiece)
-										if(p instanceof King){
-											System.out.println("Found King");
-											this.checked=p;
-											break;
-										}
-								}else
-									checked=null;
+								break;
 							} else {
 								// System.out.println("Illegal move to " + k + " located " + Arrays.toString(to));
 								// //System.out.println(k+" Ray intersects nothing in "+Arrays.toString(to));
