@@ -410,7 +410,7 @@ public class Basic_AI extends Opponent {
 			return eval(alpha,beta);
 		return best;
 	}
-	Principle variation=null;
+	LinkedList<Principle> variation=new LinkedList<Principle>();
 	int max_iterl=1;
 	public float search(float alpha,float beta,int iterl,int maxim){
 		if(iterl==0)
@@ -433,11 +433,13 @@ public class Basic_AI extends Opponent {
 						if(v>best){
 						//	System.out.println("best?");
 							if(max_iterl==iterl){
-								variation=new Principle(new int[]{i,j,k},d,v,Principle.EXACT);
+								variation.clear();
+								variation.add(new Principle(new int[]{i,j,k},d,v,Principle.EXACT));
 								System.out.println("updated variation");
 							}
 								best=v;
-						}
+						}else if(v==best&&max_iterl==iterl)
+							variation.add(new Principle(new int[]{i,j,k},d,v,Principle.EXACT));
 						player=1-player;
 						b[i][j][k]=t1;
 						b[d[0]][d[1]][d[2]]=t2;
@@ -470,7 +472,7 @@ public class Basic_AI extends Opponent {
 				System.out.println("In Action!!!!!!!!!!!!!");
 				float f=Basic_AI.this.search(-1000000, 1000000, max_iterl, act_player);
 				System.out.println(f+" OUT OF ACTION!?");
-				Principle p=variation;
+				Principle p=variation.get((int)(Math.random()*variation.size()));
 				
 				if(board.isValidMove(board.getAt(p.source),p.dest)){
 					if(game.ui.informMove(p.source,p.dest,id)){
@@ -478,8 +480,14 @@ public class Basic_AI extends Opponent {
 						Basic_AI.this.informMove(p.source, p.dest);
 						return;
 					}
-				}else
-					System.out.println("Illegal move...");
+				}else{
+					for(Piece pp:game.cPlayer==Board.WHITE?board.whitepiece:board.blackpiece)
+						for(int[] to:pp.getMoves())
+							if(game.ui.informMove(pp.location,to,id)){
+								Basic_AI.this.informMove(pp.location,to);
+								return;
+							}
+				}
 			}
 		}.start();
 	}
