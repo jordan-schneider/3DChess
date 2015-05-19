@@ -209,13 +209,13 @@ class ThreePanel extends JPanel{
 						g.drawImage(white,30*(x)+x_shift, 30*(4-y)+y_shift,30,30,null);
 					Piece p=dp.lg3d.g.board.getAt(new int[]{x,y,z});
 
-
+					
 					if(p!=null){
+						System.out.println(p.getSymbol());
 						Rectangle rectz=new Rectangle(40, 40);
 						BufferedImage piece = null;
 						BufferedImage buf=new BufferedImage(rectz.width,rectz.height,BufferedImage.TYPE_INT_ARGB);
 						Graphics2D bufg2d=buf.createGraphics();
-						bufg2d.drawImage(piece,0,0,40,40,null);
 						if(p.owner==Board.WHITE){
 							if(p instanceof King)
 								piece=whiteKing;
@@ -247,13 +247,14 @@ class ThreePanel extends JPanel{
 							else
 								piece=blackPawn;
 						}
+						bufg2d.drawImage(piece,0,0,40,40,null);
 						bufg2d.dispose();
 						g.drawImage(buf,30*(x)+x_shift, 30*(4-y)+y_shift,30,30,null);
 					}
 				}
 			break;
 		case 1:
-			int y=location[2];
+			int y=location[1];
 			for(int x=0;x<5;x++)
 				for(z=0;z<5;z++){
 					if((x+y+z)%2==0)
@@ -306,7 +307,7 @@ class ThreePanel extends JPanel{
 				}
 			break;
 		case 2:
-			int x=location[2];
+			int x=location[0];
 			for(z=0;z<5;z++)
 				for(y=0;y<5;y++){
 					if((x+y+z)%2==0)
