@@ -99,6 +99,7 @@ public class Intro extends JFrame{
 			}
 
 		}
+		
 		add(new CustomPane(this));
 		setPreferredSize(new Dimension(width, height));
 
