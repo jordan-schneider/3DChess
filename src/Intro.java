@@ -105,7 +105,22 @@ public class Intro extends JFrame{
 					}
 				});
 				add(start);
-
+				
+				add(Box.createVerticalStrut(10));
+				start = new JButton("Computer Exhibition");
+				start.setAlignmentX(Component.CENTER_ALIGNMENT);
+				start.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						Opponent a=new Basic_AI(0,0);
+						Opponent b=new Basic_AI(1,1);
+						Game g=new Game(a,b,gui,new TimeControl(5,0,0));
+						g.init();
+						gui.init(new Opponent[]{a,b},new long[]{a.id,b.id},g);	
+						frame.dispose();
+					}
+				});
+				add(start);
 				width = (int) Toolkit.getDefaultToolkit().getScreenSize().getWidth();
 				height = (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 
