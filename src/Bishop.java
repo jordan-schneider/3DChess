@@ -18,6 +18,11 @@ public class Bishop extends Piece {
 		super(x, y, z, owner, board,'B');
 	}
 
+	/**
+	 * Returns the valid moves of the bishop.
+	 * A move is valid if it is in a diagonal in any plane of the board from the bishop.
+	 * In other words, valid moves are multiples of either (0,1,1), (1,1,0), or (1,0,1)
+	 */
 	@Override
 	ArrayList<int[]> getMoves() {
 		ArrayList<int[]> valid=new ArrayList<int[]>();

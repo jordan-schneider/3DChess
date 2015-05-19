@@ -19,6 +19,10 @@ public class Local_GUI extends JFrame implements UI,ActionListener{
 	private long[] ids;
 	public Game g;
 	private TwoDPanel p;
+	
+	/**
+	 * Sets up the UI and starts the chess game
+	 */
 	@Override
 	public void init(Opponent[] opps, long[] ids, Game g) {
 		this.opps=opps;
@@ -36,9 +40,18 @@ public class Local_GUI extends JFrame implements UI,ActionListener{
 		startGame();
 		this.setVisible(true);
 	}
+	
+	/**
+	 * Starts the game
+	 */
 	public void startGame(){
 		g.start();
 	}
+	
+	/**
+	 * Creates a menu bar for the 2D ui
+	 * @return the menu bar object
+	 */
 	private JMenuBar createMenuBar() {
 		JMenuBar menuBar;
 		JMenu menu, submenu;
@@ -173,6 +186,10 @@ public class Local_GUI extends JFrame implements UI,ActionListener{
 
 		return menuBar;
 	}
+	
+	/**
+	 * unused
+	 */
 	@Override
 	public void getMove(long id) {
 		/*System.out.println("It is "+((g.cPlayer==RaumschachBoard.WHITE)?"white's":"black's")+" turn.");
@@ -182,15 +199,25 @@ public class Local_GUI extends JFrame implements UI,ActionListener{
 					System.out.println(p.getClass().getName()+": "+RaumschachBoard.moveToString(p.location)+"->"+RaumschachBoard.moveToString(i));
 		 */
 	}
+	/**
+	 * Extra step to make sure changes render
+	 */
 	@Override
 	public void actionPerformed(ActionEvent a) {
 		repaint();
 	}
+	
+	/**
+	 * Refreshes the local copy of the board
+	 */
 	@Override
 	public void reloadBoard() {
 		p.reloadBoard();
 	}
 
+	/**
+	 * Allows the AI to make moves
+	 */
 	@Override
 	public boolean informMove(int[] from, int[] to, long id) {
 		System.err.println("Informed");

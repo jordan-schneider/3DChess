@@ -1,11 +1,20 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
+/**
+ * Raumschach specific Board
+ * @author Jordan
+ *
+ */
 public class RaumschachBoard extends Board {
 	Piece[][][] board;
 	Opponent white,black;
 
+	/**
+	 * Creates a new board for two opponents
+	 * @param white opponent
+	 * @param black opponent
+	 */
 	public RaumschachBoard(Opponent white, Opponent black) {
 		board = new Piece[5][5][5];
 		this.white=white;
@@ -16,10 +25,20 @@ public class RaumschachBoard extends Board {
 		reset();
 	}
 
+	/**
+	 * Adds a piece to the board
+	 * @param piece
+	 */
 	private void add(Piece piece) {
 		board[piece.location[0]][piece.location[1]][piece.location[2]] = piece;
 	}
 
+	/**
+	 * Checks if a move is valid
+	 * @param peice to check
+	 * @param move to check piece for
+	 * @return if the move is valid
+	 */
 	@Override
 	public boolean isValidMove(Piece piece, int[] move) {
 		if(move[0]<0||move[1]<0||move[2]<0||move[0]>4||move[1]>4||move[2]>4)
@@ -47,17 +66,27 @@ public class RaumschachBoard extends Board {
 	}
 
 	@Override
+	/**
+	 * @return a list of pieces on the board
+	 */
 	public ArrayList<Piece> getPieces() {
 		ArrayList<Piece> r=new ArrayList<Piece>(whitepiece);
 		r.addAll(blackpiece);
 		return r;
 	}
 
+	/**
+	 * @return a triplet with the x, y, and z size of the board
+	 */
 	@Override
 	public int[] getSize() {
 		return new int[]{board[0][0].length,board[0].length,board.length};
 	}
 
+	/**
+	 * Gets pieces from the board
+	 * @param loc triplet of piece
+	 */
 	@Override
 	public Piece getAt(int[] loc) {
 		if(loc[0]<0||loc[1]<0||loc[2]<0||loc[0]>4||loc[1]>4||loc[2]>4)
@@ -65,6 +94,9 @@ public class RaumschachBoard extends Board {
 		return this.board[loc[0]][loc[1]][loc[2]];
 	}
 
+	/**
+	 * [MATTHEW WRite THIS I DON't KNOW WHAT IT DOES]
+	 */
 	public String toString(){
 		StringBuilder str=new StringBuilder();
 		str.append("A:abcde B:abcde C:abcde D:abcde E:abcde\n");
@@ -85,10 +117,16 @@ public class RaumschachBoard extends Board {
 		return str.toString();
 
 	}
+	
+	/**
+	 * Checks if a player is in check
+	 * @param player to check
+	 * @return if the player is in check
+	 */
 	public boolean isCheck(int player){
 		int[] k=null;
 		for(Piece p:(player==WHITE)?whitepiece:blackpiece)
-			if(p instanceof Raum_King)
+			if(p instanceof King)
 				k=p.location;
 		for(Piece p:(player==WHITE)?blackpiece:whitepiece){
 			if(p.location!=null)
@@ -101,17 +139,27 @@ public class RaumschachBoard extends Board {
 		}
 		return false;
 	}
+	
+	/**
+	 * Checks if the given player is in checkmate
+	 */
 	public boolean isCheckmate(int player){
 		if(!isStalemate(player))
 			return false;
 		return isCheck(player);
 	}
 
+	/**
+	 * Set the given peice's location to the given location
+	 */
 	@Override
 	public void setAt(Piece piece, int[] to) {
 		board[to[0]][to[1]][to[2]]=piece;
 	}
 
+	/**
+	 * Checks if the game is in stalemate
+	 */
 	@Override
 	public boolean isStalemate(int player,boolean refute) {
 		for(Piece p:(player==WHITE?whitepiece:blackpiece)){
@@ -151,18 +199,27 @@ public class RaumschachBoard extends Board {
 
 		return true;
 	}
+	
+	/**
+	 * Converts location to a string
+	 * @param t location
+	 * @return string representation of the location
+	 */
 	public static String moveToString(int[] t){
 		byte[] b=new byte[]{(byte)(t[2]+'A'),(byte)(t[0]+'a'),(byte)(t[1]+'1')};
 		return new String(b);
 	}
 
+	/**
+	 * Resets the board
+	 */
 	@Override
 	public void reset() {
 		black.pieces.clear();
 		white.pieces.clear();
 		whitepiece.clear();
 		blackpiece.clear();
-		King king = new Raum_King(2,4,4,BLACK,this);
+		King king = new King(2,4,4,BLACK,this);
 		black.add(king);
 		add(king);
 
@@ -212,7 +269,7 @@ public class RaumschachBoard extends Board {
 		add(unicorn);
 
 		
-		king = new Raum_King(2,0,0,WHITE,this);
+		king = new King(2,0,0,WHITE,this);
 		white.add(king);
 		add(king);
 

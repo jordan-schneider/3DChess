@@ -1,6 +1,11 @@
 import java.util.ArrayList;
 
-
+/**
+ * A Raumschach Knight
+ * Moves using the "two in one direction, one in another" rule. With a third dimension, you now have two options for the "other direction"
+ * @author Jordan
+ *
+ */
 public class Knight extends Piece {
 	public static final int[][] movePattern = {
 		{0,1,2},{0,2,1},{1,0,2},{1,2,0},{2,0,1},{2,1,0},
@@ -8,10 +13,23 @@ public class Knight extends Piece {
 		{0,1,-2},{0,-2,1},{1,0,-2},{1,-2,0},{-2,0,1},{-2,1,0},
 		{0,-1,-2},{0,-2,-1},{-1,0,-2},{-1,-2,0},{-2,0,-1},{-2,-1,0}
 	};
+	
+	/**
+	 * Makes a new Knight
+	 * @param x coordinate
+	 * @param y coordinate
+	 * @param z coordinate
+	 * @param owner of piece, either 0 or 1
+	 * @param board piece is on
+	 */
 	public Knight(int x, int y, int z, int owner, Board board) {
 		super(x, y, z, owner, board,'N');
 	}
 
+	/**
+	 * Returns a list of valid moves.
+	 * Moves are valid if they are 2 away in 1 axis and 1 away in another.
+	 */
 	@Override
 	ArrayList<int[]> getMoves() {
 		ArrayList<int[]> valid=new ArrayList<int[]>();

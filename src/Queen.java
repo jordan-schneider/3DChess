@@ -6,11 +6,21 @@ import java.util.ArrayList;
  *
  */
 public class Queen extends Piece {
-
+	/**
+	 * Creates a new queen
+	 * @param x coordinate
+	 * @param y coordinate
+	 * @param z coordinate
+	 * @param owner of piece, either 0 or 1
+	 * @param board piece is on
+	 */
 	public Queen(int x, int y, int z, int owner, Board board) {
 		super(x, y, z, owner, board,'Q');
 	}
 
+	/**
+	 * @returns list of valid moves
+	 */
 	@Override
 	ArrayList<int[]> getMoves() {
 		ArrayList<int[]> valid=new ArrayList<int[]>();
