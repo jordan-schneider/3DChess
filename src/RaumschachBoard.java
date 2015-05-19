@@ -219,6 +219,10 @@ public class RaumschachBoard extends Board {
 		white.pieces.clear();
 		whitepiece.clear();
 		blackpiece.clear();
+		for(int i=0;i<5;i++)
+			for(int j=0;j<5;j++)
+				for(int k=0;k<5;k++)
+					board[i][j][k]=null;
 		King king = new King(2,4,4,BLACK,this);
 		black.add(king);
 		add(king);
@@ -240,6 +244,7 @@ public class RaumschachBoard extends Board {
 		add(knight);
 
 		Pawn pawn;
+
 		for(int z=3;z<5;z++){
 			for(int x=0;x<5;x++){
 				pawn = new Pawn(x,3,z,BLACK,this);

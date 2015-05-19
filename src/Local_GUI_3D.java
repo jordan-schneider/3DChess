@@ -84,7 +84,8 @@ public class Local_GUI_3D extends JFrame implements UI{
 
 	@Override
 	public void reloadBoard() {
-		
+		this.cc.clicked_on=null;
+		this.cc.checked=null;
 	}
 
 	@Override
@@ -93,7 +94,8 @@ public class Local_GUI_3D extends JFrame implements UI{
 		if(!b)
 			return false;
 		data.mp.move(from, to,this.g.board.getAt(to).getSymbol());
-		opps[g.cPlayer].requestMove();
+		if(!g.board.isCheckmate(g.cPlayer))
+			opps[g.cPlayer].requestMove();
 		data.repaint();
 		if(this.g.board.isCheck(this.g.cPlayer)){
 			System.out.println("In check");
@@ -105,6 +107,11 @@ public class Local_GUI_3D extends JFrame implements UI{
 				}
 		}else
 			cc.checked=null;
+		if(g.board.isCheckmate(g.cPlayer)){
+			JOptionPane.showMessageDialog(this,"Checkmate! "+(g.cPlayer==Board.WHITE?"Black":"White")+" wins!","Checkmate", JOptionPane.DEFAULT_OPTION);
+			g.reset();
+			g.start();
+		}
 		return true;
 	}
 	
