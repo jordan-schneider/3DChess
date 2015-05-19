@@ -27,7 +27,7 @@ public class Intro extends JFrame{
 	Image back;
 	int width, height;
 
-	public Intro(Game g, UI gui, Opponent a, Opponent b) {
+	public Intro(UI gui) {
 		back = null;
 		try{
 			back = ImageIO.read(new File("back.jpg"));
@@ -75,11 +75,30 @@ public class Intro extends JFrame{
 				text.setFont(new Font("Courier New", Font.PLAIN, 20));
 				add(text);
 
-				JButton start = new JButton("Uhh. Okay?");
+				JButton start = new JButton("Play Against Computer");
 				start.setAlignmentX(Component.CENTER_ALIGNMENT);
 				start.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
+						Opponent a=new LocalOpponent(0);
+						Opponent b=new Basic_AI(1,1);
+						Game g=new Game(a,b,gui,new TimeControl(5,0,0));
+						g.init();
+						
+						gui.init(new Opponent[]{a,b},new long[]{a.id,b.id},g);	
+						frame.dispose();
+					}
+				});
+				add(start);
+				add(Box.createVerticalStrut(10));
+				start = new JButton("Play Against Human");
+				start.setAlignmentX(Component.CENTER_ALIGNMENT);
+				start.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						Opponent a=new LocalOpponent(0);
+						Opponent b=new LocalOpponent(1);
+						Game g=new Game(a,b,gui,new TimeControl(5,0,0));
 						g.init();
 						gui.init(new Opponent[]{a,b},new long[]{a.id,b.id},g);	
 						frame.dispose();

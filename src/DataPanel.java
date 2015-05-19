@@ -9,6 +9,8 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -22,6 +24,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -97,7 +100,7 @@ class PlayerPanel extends JPanel{
 		int x = (this.getWidth() - (int) r.getWidth()) / 2;
 		int y = (this.getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
 		g2d.drawString(s, x, y);
-		
+
 		s=this.dp.lg3d.g.getTime(isWhite?Board.WHITE:Board.BLACK);
 		g2d=(Graphics2D) g;
 		fm = g2d.getFontMetrics();
@@ -105,8 +108,8 @@ class PlayerPanel extends JPanel{
 		x = this.getHeight()-10+(x+this.getHeight()-10 - (int) r.getWidth()) / 2;
 		y = (this.getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
 		g2d.drawString(s, x, y);
-		
-		
+
+
 		if(this.dp.lg3d.g.cPlayer==(isWhite?Board.WHITE:Board.BLACK)){
 			if(times<System.currentTimeMillis()-1000){
 				showit=!showit;
@@ -133,9 +136,30 @@ class ButtonPanel extends JPanel{
 	public ButtonPanel(DataPanel dp){
 		this.dp=dp;
 		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		this.add(new JButton("Resign Game"));
+		JButton button=new JButton("Resign Game");
+		button.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog((Component) e.getSource(),
+						"You lost the game.");
+				dp.lg3d.g.reset();
+				dp.lg3d.g.start();
+
+			}
+		});
+		this.add(button);
+		button=new JButton(" Offer Draw ");
+		button.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JOptionPane.showMessageDialog((Component) e.getSource(),
+						"The draw offer is declined.");
+			}
+		});
 		this.add(Box.createHorizontalStrut(10));
-		this.add(new JButton(" Offer Draw "));
+		this.add(button);
 	}
 }
 class MovesPanel extends JPanel{
