@@ -3,11 +3,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.util.LinkedList;
 import java.util.ListIterator;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -48,9 +51,10 @@ public class DataPanel extends JPanel {
 		black.setPreferredSize(new Dimension(width,50));
 		black.setMaximumSize(new Dimension(width,50));
 		mp=new MovesPanel(this);
-		mp.setPreferredSize(new Dimension(width,lg3d.getPreferredSize().height-50-50-50-500));
+		mp.setPreferredSize(new Dimension(width,lg3d.getPreferredSize().height-50-50-500));
 		System.out.println(lg3d.getPreferredSize().height-650);
-		mp.setMaximumSize(new Dimension(width,lg3d.getPreferredSize().height-50-50-50-500));
+		mp.setMaximumSize(new Dimension(width,lg3d.getPreferredSize().height-50-50-500));
+		mp.setMinimumSize(new Dimension(width,375));
 		tp=new ThreePanel(this);
 		tp.setMinimumSize(new Dimension(width,200));
 		bp=new ButtonPanel(this);
@@ -73,6 +77,8 @@ class PlayerPanel extends JPanel{
 		this.dp=dp;
 		this.isWhite=isWhite;
 	}
+	long times=0;
+	boolean showit=false;
 	public void paintComponent(Graphics g){
 		if(isWhite)
 			g.setColor(Color.WHITE);
@@ -83,8 +89,41 @@ class PlayerPanel extends JPanel{
 			g.setColor(Color.BLACK);
 		else
 			g.setColor(Color.WHITE);
-		if(this.dp.cc.clicked_on!=null)
-			g.drawString(new String(new byte[]{(byte)this.dp.cc.clicked_on.getSymbol()}), 10, 10);
+
+		String s=this.dp.lg3d.opps[isWhite?Board.WHITE:Board.BLACK].isHuman()?"Human":"AI Bot";
+		Graphics2D g2d=(Graphics2D) g;
+		FontMetrics fm = g2d.getFontMetrics();
+		Rectangle2D r = fm.getStringBounds(s, g2d);
+		int x = (this.getWidth() - (int) r.getWidth()) / 2;
+		int y = (this.getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+		g2d.drawString(s, x, y);
+		
+		s=this.dp.lg3d.g.getTime(isWhite?Board.WHITE:Board.BLACK);
+		g2d=(Graphics2D) g;
+		fm = g2d.getFontMetrics();
+		r = fm.getStringBounds(s, g2d);
+		x = this.getHeight()-10+(x+this.getHeight()-10 - (int) r.getWidth()) / 2;
+		y = (this.getHeight() - (int) r.getHeight()) / 2 + fm.getAscent();
+		g2d.drawString(s, x, y);
+		
+		
+		if(this.dp.lg3d.g.cPlayer==(isWhite?Board.WHITE:Board.BLACK)){
+			if(times<System.currentTimeMillis()-1000){
+				showit=!showit;
+				times=System.currentTimeMillis();
+			}
+			g2d.fillOval(10, 10, this.getHeight()-20, this.getHeight()-20);
+			if(showit){
+				if(isWhite)
+					g.setColor(Color.WHITE);
+				else
+					g.setColor(Color.BLACK);
+				g2d.fillOval(12, 12, this.getHeight()-24, this.getHeight()-24);
+
+
+
+			}
+		}
 
 	}
 
@@ -94,8 +133,9 @@ class ButtonPanel extends JPanel{
 	public ButtonPanel(DataPanel dp){
 		this.dp=dp;
 		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-		this.add(new JButton("yo1"));
-		this.add(new JButton("yo2"));
+		this.add(new JButton("Resign Game"));
+		this.add(Box.createHorizontalStrut(10));
+		this.add(new JButton(" Offer Draw "));
 	}
 }
 class MovesPanel extends JPanel{
@@ -105,8 +145,8 @@ class MovesPanel extends JPanel{
 	private	JScrollPane scrollPane;
 	int cri=0;
 	int cci=1;
-	public void move(int[] from,int[] to){
-		table.getModel().setValueAt(RaumschachBoard.moveToString(from)+""+RaumschachBoard.moveToString(to), cri, cci);
+	public void move(int[] from,int[] to,char c){
+		table.getModel().setValueAt(c+""+RaumschachBoard.moveToString(from)+""+RaumschachBoard.moveToString(to), cri, cci);
 		if(++cci==3){
 			cci=1;
 			cri++;
@@ -155,7 +195,6 @@ class MovesPanel extends JPanel{
 			}
 			@Override
 			public void setValueAt(Object value,int row,int col){
-				System.out.println((String)value+" @"+row+","+col);
 				if(row<list.size()){
 					list.get(row)[2]=(String)value;
 				}else{
@@ -195,6 +234,35 @@ class ThreePanel extends JPanel{
 		try {
 			white = ImageIO.read(new File("WhiteBoard.gif"));
 		} catch (IOException e) {}
+		try{
+			blackBishop=ImageIO.read(new File("Black Bishop.png"));
+			whiteBishop=ImageIO.read(new File("White Bishop.png"));
+
+			blackKing= ImageIO.read(new File("Black King.png"));
+
+			whiteKing = ImageIO.read(new File("White King.png"));
+
+			blackKnight = ImageIO.read(new File("Black Knight.png"));
+
+			whiteKnight = ImageIO.read(new File("White Knight.png"));
+
+			blackPawn = ImageIO.read(new File("Black Pawn.png"));
+
+			whitePawn = ImageIO.read(new File("White Pawn.png"));
+
+			blackQueen = ImageIO.read(new File("Black Queen.png"));
+
+			whiteQueen = ImageIO.read(new File("White Queen.png"));
+
+			blackRook = ImageIO.read(new File("Black Rook.png"));
+
+			whiteRook = ImageIO.read(new File("White Rook.png"));
+
+			blackUnicorn = ImageIO.read(new File("Black Unicorn.png"));
+
+			whiteUnicorn = ImageIO.read(new File("White Unicorn.png"));
+		}catch(IOException e){}
+
 	}
 	//0 for xy, 1 for xz, 2 for yz
 	public void drawBoard(Graphics2D g,int x_shift,int y_shift,int which_plane,int[] location){
@@ -209,7 +277,7 @@ class ThreePanel extends JPanel{
 						g.drawImage(white,30*(x)+x_shift, 30*(4-y)+y_shift,30,30,null);
 					Piece p=dp.lg3d.g.board.getAt(new int[]{x,y,z});
 
-					
+
 					if(p!=null){
 						System.out.println(p.getSymbol());
 						Rectangle rectz=new Rectangle(40, 40);
@@ -269,7 +337,6 @@ class ThreePanel extends JPanel{
 						BufferedImage piece = null;
 						BufferedImage buf=new BufferedImage(rectz.width,rectz.height,BufferedImage.TYPE_INT_ARGB);
 						Graphics2D bufg2d=buf.createGraphics();
-						bufg2d.drawImage(piece,0,0,40,40,null);
 						if(p.owner==Board.WHITE){
 							if(p instanceof King)
 								piece=whiteKing;
@@ -301,6 +368,7 @@ class ThreePanel extends JPanel{
 							else
 								piece=blackPawn;
 						}
+						bufg2d.drawImage(piece,0,0,40,40,null);
 						bufg2d.dispose();
 						g.drawImage(buf,30*(x)+x_shift, 30*(4-z)+y_shift,30,30,null);
 					}
@@ -322,7 +390,6 @@ class ThreePanel extends JPanel{
 						BufferedImage piece = null;
 						BufferedImage buf=new BufferedImage(rectz.width,rectz.height,BufferedImage.TYPE_INT_ARGB);
 						Graphics2D bufg2d=buf.createGraphics();
-						bufg2d.drawImage(piece,0,0,40,40,null);
 						if(p.owner==Board.WHITE){
 							if(p instanceof King)
 								piece=whiteKing;
@@ -354,6 +421,7 @@ class ThreePanel extends JPanel{
 							else
 								piece=blackPawn;
 						}
+						bufg2d.drawImage(piece,0,0,40,40,null);
 						bufg2d.dispose();
 						g.drawImage(buf,30*(z)+x_shift, 30*(4-y)+y_shift,30,30,null);
 					}
@@ -363,13 +431,30 @@ class ThreePanel extends JPanel{
 	}
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
-		int height=this.getHeight();
-		int width=this.getWidth();
 		Graphics2D g2d = (Graphics2D) g;
+		int xshift=(this.getWidth()-210-150)/2;
+		System.out.println(xshift);
 		if(this.dp.cc.clicked_on!=null){
-			this.drawBoard(g2d, 30, 30, 0, this.dp.cc.clicked_on.location);
-			this.drawBoard(g2d, 30, 30, 1, this.dp.cc.clicked_on.location);
-			this.drawBoard(g2d, 105, 210, 2, this.dp.cc.clicked_on.location);
+			FontMetrics fm = g2d.getFontMetrics();
+			Rectangle2D r = fm.getStringBounds("xy-plane", g2d);
+			int x = xshift+(150 - (int) r.getWidth()) / 2;
+			int y = (30 - (int) r.getHeight()) / 2 + fm.getAscent();
+			g.drawString("xy-plane", x, y);
+
+			fm = g2d.getFontMetrics();
+			r = fm.getStringBounds("xz-plane", g2d);
+			x = xshift+180+(150 - (int) r.getWidth()) / 2;
+			y = (30 - (int) r.getHeight()) / 2 + fm.getAscent();
+			g.drawString("xz-plane", x, y);
+
+			fm = g2d.getFontMetrics();
+			r = fm.getStringBounds("yz-plane", g2d);
+			x = xshift+90+(150 - (int) r.getWidth()) / 2;
+			y = 180+(30 - (int) r.getHeight()) / 2 + fm.getAscent();
+			g.drawString("yz-plane", x, y);
+			this.drawBoard(g2d, xshift, 30, 0, this.dp.cc.clicked_on.location);
+			this.drawBoard(g2d, xshift+180, 30, 1, this.dp.cc.clicked_on.location);
+			this.drawBoard(g2d, xshift+90, 210, 2, this.dp.cc.clicked_on.location);
 		}
 	}
 }
