@@ -1,6 +1,12 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Generic board object
+ * Stores information about the pieces on it
+ * @author Jordan
+ *
+ */
 public abstract class Board {
 	public static final int WHITE = 0;
 	public static final int BLACK = 1;
@@ -58,5 +64,10 @@ public abstract class Board {
 	 * @return {@code true} if {@code player} is in check
 	 */
 	public abstract boolean isCheck(int player);
+	
+	/**
+	 * Resets the board state
+	 * Should work while resetting the whole game
+	 */
 	public abstract void reset();
 }

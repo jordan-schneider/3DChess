@@ -1,6 +1,12 @@
 import java.util.ArrayList;
 
-
+/**
+ * A Raumschach Pawn.
+ * Moves foreward in either x or z direction
+ * Takes must have a y component
+ * @author Jordan
+ *
+ */
 public class Pawn extends Piece {
 
 	public static final int[][] wcaptures={
@@ -9,10 +15,22 @@ public class Pawn extends Piece {
 	public static final int[][] bcaptures={
 		{1,-1,0},{-1,-1,0},{1,0,-1},{-1,0,-1},{0,-1,-1}
 	};
+	
+	/**
+	 * Creates a new pawn
+	 * @param x coordinate
+	 * @param y coordinate
+	 * @param z coordinate
+	 * @param owner of piece, either 0 or 1
+	 * @param board piece is on
+	 */
 	public Pawn(int x, int y, int z, int owner, Board board) {
 		super(x, y, z, owner, board,'P');
 	}
 
+	/**
+	 * @returns list of valid moves
+	 */
 	@Override
 	ArrayList<int[]> getMoves() {
 		ArrayList<int[]> valid=new ArrayList<int[]>();
