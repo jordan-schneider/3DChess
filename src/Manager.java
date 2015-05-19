@@ -7,6 +7,6 @@ public class Manager {
 		UI gui = new Local_GUI_3D();
 		//UI gui = new Local_GUI();
 		Game g=new Game(a,b,gui,new TimeControl(5,0,0));
-		new Intro();
+		new Intro(g,gui,a,b);
 	}
 }
